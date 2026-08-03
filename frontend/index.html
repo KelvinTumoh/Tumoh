@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IDE Engine</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; background: #1e1e1e; color: #d4d4d4; font-family: system-ui, sans-serif; }
+    #app { display: flex; height: 100%; width: 100%; }
+    #sidebar { width: 260px; min-width: 200px; max-width: 400px; resize: horizontal; overflow: auto; background: #252526; border-right: 1px solid #333; padding: 0.5rem; }
+    #main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    #editor { flex: 1; min-height: 0; }
+    #diff-editor { height: 0; overflow: hidden; }
+    #diff-editor.visible { flex: 1; height: auto; }
+    #terminal { height: 160px; min-height: 80px; max-height: 400px; resize: vertical; overflow: hidden; background: #1e1e1e; border-top: 1px solid #333; }
+    #sidebar h3 { font-size: 0.8rem; margin: 0.6rem 0 0.3rem; color: #858585; text-transform: uppercase; }
+    .tree-node { padding-left: 0.6rem; font-size: 0.82rem; cursor: pointer; white-space: nowrap; }
+    .tree-node:hover { color: #fff; }
+    .git-entry { display: flex; justify-content: space-between; padding: 0.15rem 0; font-size: 0.82rem; cursor: pointer; }
+    .git-entry:hover { background: #333; }
+    .git-status { font-weight: bold; width: 1.5rem; }
+    .hidden { display: none; }
+    .tab-bar { display: flex; background: #333; }
+    .tab { padding: 0.4rem 0.8rem; cursor: pointer; font-size: 0.8rem; }
+    .tab.active { background: #1e1e1e; color: #fff; }
+  </style>
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs/editor/editor.main.css"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css"
+  />
+</head>
+<body>
+  <div id="app">
+    <div id="sidebar">
+      <h3>Explorer</h3>
+      <div id="file-tree"></div>
+      <h3>Git</h3>
+      <div id="git-status"></div>
+      <h3>Project</h3>
+      <div id="project-info"></div>
+    </div>
+    <div id="main">
+      <div class="tab-bar">
+        <div class="tab active" data-view="editor" id="tab-editor">Editor</div>
+        <div class="tab" data-view="diff" id="tab-diff">Diff</div>
+      </div>
+      <div id="editor" class="view active"></div>
+      <div id="diff-editor" class="view"></div>
+      <div id="terminal"></div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs/loader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
+  <script src="editor.js"></script>
+</body>
+</html>

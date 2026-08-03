@@ -1,0 +1,5 @@
+pytest>=7.4.0
+websockets>=17.0
+pydantic>=2.7.0
+pydantic-settings>=2.14.0
+pyjwt>=2.13.0
