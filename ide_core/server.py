@@ -17,6 +17,8 @@ from ide_core.document_manager import DocumentManager
 from ide_core.git.manager import GitManager
 from ide_core.lsp.client import LSPClient
 from ide_core.project.manager import ProjectManager
+from ide_core.tenant.manager import TenantManager
+from ide_core.tenant.middleware import TenantMiddleware
 from ide_core.terminal import TerminalManager
 from ide_core.utils.position import offset_to_position
 
@@ -34,6 +36,8 @@ class EditorServer:
         git_manager: Optional[GitManager] = None,
         host: str = "localhost",
         port: int = 8765,
+        settings: Optional[IDESettings] = None,
+        tenant_manager: Optional[TenantManager] = None,
     ) -> None:
         self._lsp_client = lsp_client
         self._document_manager = document_manager
@@ -43,6 +47,11 @@ class EditorServer:
         self._git = git_manager
         self.host = host
         self.port = port
+        self._settings = settings or IDESettings()
+        self._tenant_manager = tenant_manager or TenantManager(self._settings)
+        self._middleware = TenantMiddleware(
+            self._handle, self._tenant_manager, self._settings
+        )
         self._server: Optional[Server] = None
         self._clients: Set[ServerConnection] = set()
 
@@ -94,19 +103,35 @@ class EditorServer:
         finally:
             self._clients.discard(ws)
 
+    def _tenant_uri(self, uri: str, tenant_id: Optional[str]) -> str:
+        """Return a tenant-scoped document URI."""
+        if tenant_id is None:
+            return uri
+        return f"tenant://{tenant_id}/{uri}"
+
+    def _tenant_path(self, path: str, tenant_id: Optional[str]) -> str:
+        """Return a path resolved inside the tenant's isolated workspace."""
+        if tenant_id is None:
+            return path
+        workspace = self._tenant_manager.workspace_for(tenant_id)
+        return str(workspace / path.lstrip("/"))
+
     async def _route(self, ws: ServerConnection, msg: Dict[str, Any]) -> None:
         """Dispatch an inbound WebSocket message to the correct handler."""
         msg_type = msg.get("type")
+        tenant_id = getattr(ws, "tenant_id", None)
 
         if msg_type == "doc_open":
+            internal_uri = self._tenant_uri(msg["uri"], tenant_id)
             await self._document_manager.open_document(
-                msg["uri"], msg["language_id"], msg["content"]
+                internal_uri, msg["language_id"], msg["content"]
             )
             await ws.send(json.dumps({"type": "doc_opened", "uri": msg["uri"]}))
 
         elif msg_type == "doc_edit":
+            internal_uri = self._tenant_uri(msg["uri"], tenant_id)
             doc = await self._document_manager.apply_edit(
-                msg["uri"],
+                internal_uri,
                 msg["start_index"],
                 msg["end_index"],
                 msg["new_text"],
@@ -124,10 +149,11 @@ class EditorServer:
 
         elif msg_type == "completion":
             uri = msg["uri"]
+            internal_uri = self._tenant_uri(uri, tenant_id)
             offset = msg["offset"]
             request_id = msg.get("request_id")
 
-            doc = self._document_manager.get(uri)
+            doc = self._document_manager.get(internal_uri)
             if doc is None:
                 await ws.send(
                     json.dumps(
@@ -141,7 +167,7 @@ class EditorServer:
                 return
 
             position = offset_to_position(doc.get_text(), offset)
-            response = await self._lsp_client.completion(uri, position)
+            response = await self._lsp_client.completion(internal_uri, position)
             items = self._unwrap_completion_result(response)
 
             await ws.send(
@@ -165,7 +191,8 @@ class EditorServer:
                     json.dumps({"type": "error", "message": "No project configured"})
                 )
                 return
-            tree = self._project.tree(msg.get("path"))
+            path = self._tenant_path(msg.get("path", ""), tenant_id)
+            tree = self._project.tree(path)
             await ws.send(json.dumps({"type": "tree", "tree": tree}))
 
         elif msg_type == "get_project":
@@ -195,8 +222,9 @@ class EditorServer:
                     json.dumps({"type": "error", "message": "No git manager configured"})
                 )
                 return
-            diff = await self._git.diff_file(msg.get("path", ""))
-            original = await self._git.diff_file(msg.get("path", ""), staged=False)
+            path = self._tenant_path(msg.get("path", ""), tenant_id)
+            diff = await self._git.diff_file(path)
+            original = await self._git.diff_file(path, staged=False)
             modified = diff  # simplified: display the same diff as modified text
             await ws.send(
                 json.dumps({
@@ -226,7 +254,12 @@ class EditorServer:
         """Start the WebSocket server and return the underlying ``Server``."""
         if self._terminal is not None:
             await self._terminal.start()
-        self._server = await serve(self._handle, self.host, self.port)
+        self._server = await serve(
+            self._middleware,
+            self.host,
+            self.port,
+            process_request=self._middleware.process_request,
+        )
         if self.port == 0:
             self.port = self._server.sockets[0].getsockname()[1]
         return self._server
@@ -261,6 +294,7 @@ async def _serve() -> None:
             git_manager=git,
             host=settings.ide_host,
             port=settings.ide_port,
+            settings=settings,
         )
         await lsp.initialize(Path.cwd().as_uri())
         await server.start()

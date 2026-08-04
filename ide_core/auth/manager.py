@@ -18,6 +18,7 @@ class User(BaseModel):
     user_id: str
     name: str
     role: str = "user"
+    tenant_id: Optional[str] = None
 
 
 class AuthManager:
@@ -46,6 +47,7 @@ class AuthManager:
             "sub": user.user_id,
             "name": user.name,
             "role": user.role,
+            "tenant_id": user.tenant_id,
             "iat": now,
             "exp": now + timedelta(minutes=self._settings.jwt_expiry_minutes),
         }
@@ -67,6 +69,7 @@ class AuthManager:
                 user_id=payload["sub"],
                 name=payload["name"],
                 role=payload.get("role", "user"),
+                tenant_id=payload.get("tenant_id"),
             )
         except (jwt.ExpiredSignatureError, jwt.InvalidTokenError, KeyError):
             return None

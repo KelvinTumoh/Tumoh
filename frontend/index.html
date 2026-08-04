@@ -25,6 +25,7 @@
     .tab { padding: 0.4rem 0.8rem; cursor: pointer; font-size: 0.8rem; }
     .tab.active { background: #1e1e1e; color: #fff; }
   </style>
+  <link rel="stylesheet" href="chat_ui.css" />
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs/editor/editor.main.css"
@@ -48,9 +49,29 @@
       <div class="tab-bar">
         <div class="tab active" data-view="editor" id="tab-editor">Editor</div>
         <div class="tab" data-view="diff" id="tab-diff">Diff</div>
+        <div class="tab" data-view="chat" id="tab-chat">Chat</div>
       </div>
       <div id="editor" class="view active"></div>
       <div id="diff-editor" class="view"></div>
+      <div id="chat-panel" class="view hidden">
+        <div class="chat-header">
+          <h3>Chat</h3>
+          <span id="chat-tenant">-</span>
+        </div>
+        <div class="chat-body">
+          <div class="chat-sidebar" id="chat-rooms"></div>
+          <div class="chat-log" id="chat-log"></div>
+        </div>
+        <div class="chat-input-bar">
+          <button class="chat-attach-btn" id="chat-record" type="button">Voice</button>
+          <button class="chat-attach-btn" id="chat-image-btn" type="button" onclick="document.getElementById('chat-image').click()">Image</button>
+          <input id="chat-image" type="file" accept="image/*" style="display:none" />
+          <button class="chat-attach-btn" id="chat-pdf-btn" type="button" onclick="document.getElementById('chat-pdf').click()">PDF</button>
+          <input id="chat-pdf" type="file" accept=".pdf" style="display:none" />
+          <input id="chat-input" type="text" placeholder="Type a message..." autocomplete="off" />
+          <button id="chat-send" type="button">Send</button>
+        </div>
+      </div>
       <div id="terminal"></div>
     </div>
   </div>
@@ -58,5 +79,6 @@
   <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
   <script src="editor.js"></script>
+  <script src="chat_ui.js"></script>
 </body>
 </html>

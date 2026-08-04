@@ -101,8 +101,10 @@
   <header>
     <h1>IDE Core Engine</h1>
     <p class="subtitle">
-      A modular, open-source IDE backend combining a piece table buffer, LSP client,
-      autonomous ReAct agent, Monaco UI, xterm.js terminal, and Git integration.
+      IDE Core Engine v2.0.0 — a modular, AI-powered IDE backend combining a piece table
+      buffer, LSP client, multi-tenant middleware, multimodal input, creative media
+      generation, smart decisions, friend personality, unified chat, and an autonomous
+      ReAct agent.
     </p>
     <div class="cta">
       <a class="btn" href="https://github.com/your-org/ide-core">GitHub</a>
@@ -136,6 +138,30 @@
       <div class="card">
         <h3>Git Integration</h3>
         <p>Status, staging, commits, and per-file diffs powered by Git.</p>
+      </div>
+      <div class="card">
+        <h3>Multi-Tenant</h3>
+        <p>Isolated workspaces, auth, and chat data per tenant.</p>
+      </div>
+      <div class="card">
+        <h3>Multimodal Input</h3>
+        <p>Voice, image OCR, PDF, and document text extraction.</p>
+      </div>
+      <div class="card">
+        <h3>Creative Agent</h3>
+        <p>Generate images, logos, sounds, music, voiceovers, and videos.</p>
+      </div>
+      <div class="card">
+        <h3>Smart Decisions</h3>
+        <p>Score, rank, and explain creative or code candidates.</p>
+      </div>
+      <div class="card">
+        <h3>Friend Personality</h3>
+        <p>Greetings, celebrations, encouragement, and user memory.</p>
+      </div>
+      <div class="card">
+        <h3>Unified Chat</h3>
+        <p>WebSocket chat with rooms, presence, and AI subsystem routing.</p>
       </div>
     </div>
   </section>
@@ -191,6 +217,26 @@
     <div class="cli">pip install python-lsp-server</div>
     <div class="cli">python -m ide_core.server</div>
     <p style="color:var(--muted);">Open <code>frontend/index.html</code> in your browser to connect.</p>
+
+    <h3 style="margin-top:2rem; color:var(--accent);">Feature Flags</h3>
+    <table style="width:100%; border-collapse:collapse; color:var(--text); margin-top:1rem;">
+      <thead>
+        <tr style="border-bottom:1px solid #334155; text-align:left;">
+          <th style="padding:.5rem 0;">Variable</th>
+          <th style="padding:.5rem 0;">Default</th>
+          <th style="padding:.5rem 0;">Description</th>
+        </tr>
+      </thead>
+      <tbody style="color:var(--muted);">
+        <tr style="border-bottom:1px solid #334155;"><td style="padding:.5rem 0;">ENABLE_MULTI_TENANT</td><td>False</td><td>Multi-tenant workspaces.</td></tr>
+        <tr style="border-bottom:1px solid #334155;"><td style="padding:.5rem 0;">ENABLE_MULTIMODAL</td><td>True</td><td>Voice, OCR, PDF, and document input.</td></tr>
+        <tr style="border-bottom:1px solid #334155;"><td style="padding:.5rem 0;">ENABLE_CREATIVE_AGENT</td><td>True</td><td>Image, sound, and video generation.</td></tr>
+        <tr style="border-bottom:1px solid #334155;"><td style="padding:.5rem 0;">ENABLE_SMART_DECISIONS</td><td>True</td><td>Candidate scoring and ranking.</td></tr>
+        <tr style="border-bottom:1px solid #334155;"><td style="padding:.5rem 0;">ENABLE_FRIEND_PERSONALITY</td><td>True</td><td>Greetings, celebrations, and help.</td></tr>
+        <tr style="border-bottom:1px solid #334155;"><td style="padding:.5rem 0;">ENABLE_CHAT</td><td>True</td><td>Unified WebSocket chat gateway.</td></tr>
+        <tr style="border-bottom:1px solid #334155;"><td style="padding:.5rem 0;">CHAT_ENABLE_FRIENDS</td><td>True</td><td>Personality decoration in chat.</td></tr>
+      </tbody>
+    </table>
   </section>
 
   <section id="screenshots">

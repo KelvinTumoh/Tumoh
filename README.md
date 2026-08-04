@@ -13,35 +13,97 @@
   </a>
 </p>
 
-The **IDE Core Engine** is a modular, open-source IDE backend written in Python. It combines a piece-table text buffer, asynchronous LSP client, persistent terminal PTY, Git integration, project workspace scanning, and an autonomous ReAct agent into a single WebSocket gateway that powers a Monaco + xterm.js frontend.
+The **IDE Core Engine v2.0.0** is a modular, open-source AI IDE backend written in Python. It now unifies a piece-table text buffer, LSP client, multi-tenant middleware, multimodal input processing, creative media generation, smart decision ranking, a friend personality layer, and an autonomous ReAct agent into a single WebSocket gateway that powers a Monaco + xterm.js frontend with a built-in chat interface.
 
 ## Features
 
 - **Piece Table Text Buffer** — immutable `original` and append-only `add` buffers make edits non-destructive and support undo/snapshot workflows.
 - **LSP Client** — async JSON-RPC client for language servers (Python, TypeScript, etc.) with `textDocument/didOpen`, `didChange`, `completion`, and diagnostic publishing.
 - **Autonomous ReAct Agent** — `AgentOrchestrator` drives an iterative tool loop with file, search, command, and diagnostic tools.
-- **Monaco Editor UI** — `frontend/index.html` loads Monaco Editor via CDN and connects over WebSocket.
+- **Multi-Tenant Middleware** — `TenantManager` isolates workspaces, auth, and chat data per tenant.
+- **Multimodal Input Engine** — voice, image OCR, PDF, and document text extraction.
+- **Creative Agent** — generates images, logos, sound, music, voiceovers, and video previews.
+- **Smart Decision System** — `SmartAssistant` scores and ranks creative or code candidates with explanations.
+- **Friend Personality** — `FriendPersonality` provides greetings, celebrations, encouragement, and memory.
+- **Unified Chat Gateway** — `ChatWebSocketServer` routes text, voice, image, PDF, and creative requests through all subsystems.
+- **Monaco Editor UI + Chat** — `frontend/index.html` loads Monaco Editor and the new chat panel over WebSocket.
 - **xterm.js PTY** — `TerminalManager` spawns a persistent shell and streams output to the UI.
 - **Git Diffing** — `GitManager` provides status, staging, commit, and per-file diff support.
 - **Pydantic Settings** — configuration loaded from `.env` or environment variables.
-- **62+ passing pytest suite** covering buffer, document, LSP, agent, server, and integration tests.
+- **181 passing pytest suite** covering buffer, document, LSP, agent, server, tenant, multimodal, creative, smart decision, personality, and chat tests.
 
 ## Architecture
 
 ```mermaid
-graph LR
-  A[Monaco + xterm.js Frontend] -->|WebSocket| B[ide_core.server.EditorServer]
-  B --> C[DocumentManager]
-  C --> D[TextBuffer Piece Table]
-  B --> E[LSPClient JSON-RPC]
-  B --> F[TerminalManager PTY]
-  B --> G[ProjectManager]
-  B --> H[GitManager]
-  I[AgentOrchestrator ReAct] --> J[ToolRegistry]
-  J --> C
-  J --> F
-  J --> G
-  J --> H
+graph TB
+  A[Monaco + xterm.js Frontend] -->|WebSocket /ws/editor| B[ide_core.server.EditorServer]
+  A -->|WebSocket /ws/chat| C[ide_core.chat.ChatWebSocketServer]
+  B --> D[DocumentManager]
+  D --> E[TextBuffer Piece Table]
+  B --> F[LSPClient JSON-RPC]
+  B --> G[TerminalManager PTY]
+  B --> H[ProjectManager]
+  B --> I[GitManager]
+  C --> J[MessageHandler]
+  J --> K[UnifiedChatIntegration]
+  K --> L[MultimodalInputEngine]
+  K --> M[CreativeAgent]
+  K --> N[SmartAssistant]
+  K --> O[FriendPersonality]
+  K --> P[AgentOrchestrator]
+  C --> Q[RoomManager]
+  C --> R[PresenceManager]
+  Q --> S[TenantManager + Auth]
+  P --> T[ToolRegistry]
+  T --> D
+  T --> G
+  T --> H
+  T --> I
+
+  subgraph Core Engine
+    D
+    E
+    F
+  end
+
+  subgraph Multi-Tenant Middleware
+    S
+  end
+
+  subgraph Multimodal Processing
+    L --> L1[Voice]
+    L --> L2[Image OCR]
+    L --> L3[PDF]
+    L --> L4[Document]
+  end
+
+  subgraph Creative Agent
+    M --> M1[Image / Logo / UI Mockup]
+    M --> M2[Sound / Music / Voiceover]
+    M --> M3[Video / Tutorial]
+    M --> M4[ToolInstaller]
+  end
+
+  subgraph Smart Decision
+    N --> N1[Scorer]
+    N --> N2[Chooser]
+    N --> N3[Learner]
+  end
+
+  subgraph Friend Personality
+    O --> O1[Greeter]
+    O --> O2[Celebrator]
+    O --> O3[ProactiveHelper]
+    O --> O4[FriendMemory]
+  end
+
+  subgraph Unified Chat
+    C
+    J
+    K
+    Q
+    R
+  end
 ```
 
 ## Quickstart
@@ -101,8 +163,22 @@ python -m ide_core.server
 | `JWT_EXPIRY_MINUTES` | `60` | JWT expiry. |
 | `LOG_LEVEL` | `INFO` | Log level. |
 | `LOG_PATH` | `ide_engine.log` | Log file path. |
-| `IDE_HOST` | `localhost` | WebSocket host. |
-| `IDE_PORT` | `8765` | WebSocket port. |
+| `IDE_HOST` | `localhost` | Editor WebSocket host. |
+| `IDE_PORT` | `8765` | Editor WebSocket port. |
+| `ENABLE_MULTI_TENANT` | `False` | Enable multi-tenant workspaces. |
+| `ENABLE_MULTIMODAL` | `True` | Enable voice, image, PDF, and document processing. |
+| `ENABLE_VOICE_INPUT` | `True` | Enable voice transcription. |
+| `ENABLE_IMAGE_OCR` | `True` | Enable image text extraction. |
+| `ENABLE_PDF_PARSING` | `True` | Enable PDF text extraction. |
+| `ENABLE_CREATIVE_AGENT` | `True` | Enable image, sound, and video generation. |
+| `CREATIVE_TOOLS_PATH` | `.creative_tools` | Directory for generated creative assets. |
+| `ENABLE_SMART_DECISIONS` | `True` | Enable candidate scoring and ranking. |
+| `ENABLE_FRIEND_PERSONALITY` | `True` | Enable friendly greeting, celebration, and help. |
+| `ENABLE_CHAT` | `True` | Enable the unified chat WebSocket gateway. |
+| `CHAT_WEBSOCKET_PATH` | `/ws/chat` | Chat WebSocket path. |
+| `CHAT_MESSAGE_HISTORY_LIMIT` | `100` | Max messages persisted per room. |
+| `CHAT_PRESENCE_TIMEOUT` | `60` | Presence timeout in seconds. |
+| `CHAT_ENABLE_FRIENDS` | `True` | Decorate chat responses with FriendPersonality. |
 
 ## Development
 
@@ -122,22 +198,31 @@ docker compose up --build
 
 ```
 ide_core/
-  agent/          # ReAct agent and tools
-  buffer.py       # Piece-table text buffer
-  config/         # Pydantic settings
-  diagnostics.py  # Diagnostic manager
+  agent/           # ReAct agent and tools
+  auth/            # JWT and tenant-aware auth
+  buffer.py        # Piece-table text buffer
+  chat/            # Unified chat subsystem
+  config/          # Pydantic settings
+  creative/        # Image, sound, video generation
+  diagnostics.py   # Diagnostic manager
   document_manager.py
-  git/            # Git integration
-  lsp/            # LSP client and protocol
-  project/        # Workspace scanning
-  server.py       # WebSocket gateway
-  terminal.py     # PTY manager
+  git/             # Git integration
+  lsp/             # LSP client and protocol
+  multimodal/      # Voice, OCR, PDF, document input
+  personality/     # Friend personality (greet, celebrate, memory)
+  project/         # Workspace scanning
+  server.py        # Editor WebSocket gateway
+  smart_decision/  # Scorer, chooser, learner
+  terminal.py      # PTY manager
+  tenant/          # Multi-tenant middleware
 frontend/
-  index.html      # Monaco + xterm.js UI
-  editor.js       # WebSocket client
-tests/            # pytest suite
+  index.html       # Monaco + xterm.js + Chat UI
+  editor.js        # Editor WebSocket client
+  chat_ui.js       # Chat client
+  chat_ui.css      # Chat styles
+tests/             # pytest suite (181 tests)
 scripts/
-  release.py      # Automated release script
+  release.py       # Automated release script
 ```
 
 ## Contributing

@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from typing import Any, Dict, List, Optional
 
+from ide_core.config.settings import IDESettings
+from ide_core.personality import FriendPersonality
 from ide_core.terminal import TerminalManager
 
 from .config import AgentConfig
@@ -30,6 +32,7 @@ class AgentOrchestrator:
         agent_memory: Optional[AgentMemory] = None,
         edit_batcher: Optional[EditBatcher] = None,
         semantic_search: Optional[SemanticSearch] = None,
+        ide_settings: Optional[IDESettings] = None,
     ) -> None:
         self._llm = llm_client
         self._tools = tool_registry
@@ -39,6 +42,7 @@ class AgentOrchestrator:
         self._memory = agent_memory
         self._batcher = edit_batcher
         self._semantic = semantic_search
+        self._ide_settings = ide_settings or IDESettings()
 
     async def run(self, prompt: str) -> List[dict]:
         """Run the agent loop until the LLM stops calling tools or max iterations."""
@@ -140,4 +144,6 @@ class AgentOrchestrator:
                 " After making code changes, run the relevant test command "
                 "(e.g. `python -m pytest`) and fix any failures you find."
             )
+        if self._ide_settings.enable_friend_personality:
+            base += " " + FriendPersonality.get_system_directive()
         return base
