@@ -9,13 +9,23 @@ __pycache__/
 venv/
 env/
 
-# IDE / local state
+# Environment & Secrets
 .env
+*.env
+*.pem
+*.key
+
+# Local Data & Test Artifacts
 .ide_tenants/
-.creative_tools/
 data/
+.creative_tools/
+*.db
+*.sqlite3
 ide_engine.log
 
-# Test artifacts
+# Python & Virtual Envs
+__pycache__/
+*.py[cod]
+venv/
+.venv/
 .pytest_cache/
-*.pyc
