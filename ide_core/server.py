@@ -19,6 +19,7 @@ from ide_core.document_manager import DocumentManager
 from ide_core.git.manager import GitManager
 from ide_core.lsp.client import LSPClient
 from ide_core.project.manager import ProjectManager
+from ide_core.reliability import AutosaveManager, SessionManager
 from ide_core.security import SecurityManager
 from ide_core.static_server import StaticFileHandler
 from ide_core.tenant.manager import TenantManager
@@ -404,6 +405,8 @@ async def _serve() -> None:
     try:
         diagnostics = DiagnosticManager()
         documents = DocumentManager(lsp, diagnostics)
+        session = SessionManager(documents)
+        autosave = AutosaveManager(documents)
         terminal = TerminalManager(
             workspace=Path.cwd(),
             security_manager=SecurityManager(settings),
@@ -424,11 +427,15 @@ async def _serve() -> None:
             settings=settings,
         )
         await lsp.initialize(Path.cwd().as_uri())
+        await session.restore()
+        autosave.start()
         await server.start()
         print(f"IDE server listening on ws://{server.host}:{server.port}")
         try:
             await asyncio.Future()
         finally:
+            await session.save()
+            await autosave.stop()
             await server.stop()
     finally:
         await lsp.stop()

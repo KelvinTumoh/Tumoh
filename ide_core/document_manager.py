@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+from urllib.parse import urlparse
+
 from ide_core.buffer import TextBuffer
 from ide_core.diagnostics import DiagnosticManager
 from ide_core.utils.position import offset_to_position
@@ -15,6 +18,7 @@ class Document:
         self.language_id: str = language_id
         self.buffer: TextBuffer = TextBuffer(content)
         self.version: int = 1
+        self.is_dirty: bool = False
 
     def get_text(self) -> str:
         """Return the current full text of the document."""
@@ -94,6 +98,7 @@ class DocumentManager:
             document.buffer.insert(start_index, new_text)
 
         document.version += 1
+        document.is_dirty = True
 
         self._edit_history.append(
             {
@@ -125,3 +130,42 @@ class DocumentManager:
         await self._lsp_client.did_close(uri)
         del self._documents[uri]
         self._diagnostics.clear(uri)
+
+    @property
+    def open_uris(self) -> list[str]:
+        """Return the URIs of all currently open documents."""
+        return list(self._documents.keys())
+
+    @property
+    def dirty_uris(self) -> list[str]:
+        """Return the URIs of documents with unsaved changes."""
+        return [uri for uri, doc in self._documents.items() if doc.is_dirty]
+
+    async def save_document(self, uri: str) -> Document:
+        """Persist the document to disk and mark it clean."""
+        document = self._documents.get(uri)
+        if document is None:
+            raise KeyError(f"Document not open: {uri}")
+
+        target = self._uri_to_path(uri)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(document.get_text(), encoding="utf-8")
+        document.is_dirty = False
+        return document
+
+    @staticmethod
+    def _uri_to_path(uri: str) -> Path:
+        """Convert a URI to a filesystem path."""
+        parsed = urlparse(uri)
+        path = parsed.path
+        if parsed.scheme == "file" and len(path) >= 3 and path[0] == "/" and path[2] == ":":
+            path = path[1:]
+        return Path(path)
+
+    async def open_or_restore(
+        self, uri: str, language_id: str, content: str
+    ) -> Document:
+        """Open a document only if it is not already open."""
+        if uri in self._documents:
+            return self._documents[uri]
+        return await self.open_document(uri, language_id, content)

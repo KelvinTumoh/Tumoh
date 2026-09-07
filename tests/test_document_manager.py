@@ -1,6 +1,7 @@
 """Unit tests for Document, DocumentManager, and position helpers."""
 
 import asyncio
+from pathlib import Path
 from unittest.mock import AsyncMock
 
 import pytest
@@ -166,5 +167,38 @@ def test_close_document_removes_and_clears_diagnostics():
         client.did_close.assert_awaited_once_with("file:///a.py")
         assert dm.get("file:///a.py") is None
         assert diagnostics.get("file:///a.py") == []
+
+    asyncio.run(coro())
+
+
+def test_apply_edit_marks_document_dirty_and_save_cleans(tmp_path: Path):
+    async def coro():
+        uri = str(tmp_path / "a.py")
+        client = FakeLSPClient()
+        dm = DocumentManager(client, DiagnosticManager())
+        await dm.open_document(uri, "python", "hello")
+
+        doc = await dm.apply_edit(uri, 5, 5, " world")
+        assert doc.is_dirty is True
+        assert dm.dirty_uris == [uri]
+
+        await dm.save_document(uri)
+        assert doc.is_dirty is False
+        assert dm.dirty_uris == []
+
+    asyncio.run(coro())
+
+
+def test_save_document_writes_to_disk(tmp_path: Path):
+    async def coro():
+        target = tmp_path / "main.py"
+        uri = str(target)
+        client = FakeLSPClient()
+        dm = DocumentManager(client, DiagnosticManager())
+        await dm.open_document(uri, "python", "print(1)")
+        await dm.apply_edit(uri, 8, 8, "\nprint(2)")
+
+        await dm.save_document(uri)
+        assert target.read_text(encoding="utf-8") == "print(1)\nprint(2)"
 
     asyncio.run(coro())
