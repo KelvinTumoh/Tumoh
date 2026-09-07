@@ -183,6 +183,72 @@ class EditorServer:
                 )
             )
 
+        elif msg_type == "hover":
+            uri = msg["uri"]
+            internal_uri = self._tenant_uri(uri, tenant_id)
+            offset = msg["offset"]
+            request_id = msg.get("request_id")
+
+            doc = self._document_manager.get(internal_uri)
+            if doc is None:
+                await ws.send(
+                    json.dumps(
+                        {
+                            "type": "hover",
+                            "request_id": request_id,
+                            "contents": None,
+                        }
+                    )
+                )
+                return
+
+            position = offset_to_position(doc.get_text(), offset)
+            response = await self._lsp_client.hover(internal_uri, position)
+            contents = self._unwrap_hover_result(response)
+
+            await ws.send(
+                json.dumps(
+                    {
+                        "type": "hover",
+                        "request_id": request_id,
+                        "contents": contents,
+                    }
+                )
+            )
+
+        elif msg_type == "signature_help":
+            uri = msg["uri"]
+            internal_uri = self._tenant_uri(uri, tenant_id)
+            offset = msg["offset"]
+            request_id = msg.get("request_id")
+
+            doc = self._document_manager.get(internal_uri)
+            if doc is None:
+                await ws.send(
+                    json.dumps(
+                        {
+                            "type": "signature_help",
+                            "request_id": request_id,
+                            "signatures": [],
+                        }
+                    )
+                )
+                return
+
+            position = offset_to_position(doc.get_text(), offset)
+            response = await self._lsp_client.signature_help(internal_uri, position)
+            signatures = self._unwrap_signature_result(response)
+
+            await ws.send(
+                json.dumps(
+                    {
+                        "type": "signature_help",
+                        "request_id": request_id,
+                        "signatures": signatures,
+                    }
+                )
+            )
+
         elif msg_type == "pty_input":
             if self._terminal is None:
                 await ws.send(
@@ -273,6 +339,24 @@ class EditorServer:
             return result
         if isinstance(result, dict):
             return result.get("items", [])
+        return []
+
+    @staticmethod
+    def _unwrap_hover_result(response: dict) -> Any:
+        """Normalize an LSP ``textDocument/hover`` response."""
+        result = response.get("result")
+        if result is None:
+            return None
+        if isinstance(result, dict):
+            return result.get("contents")
+        return result
+
+    @staticmethod
+    def _unwrap_signature_result(response: dict) -> list[dict]:
+        """Normalize an LSP ``textDocument/signatureHelp`` response."""
+        result = response.get("result")
+        if isinstance(result, dict):
+            return result.get("signatures", [])
         return []
 
     async def start(self) -> Server:

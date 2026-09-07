@@ -195,6 +195,26 @@ class LSPClient:
             },
         )
 
+    async def hover(self, uri: str, position: Position) -> dict:
+        """Request hover information for ``uri`` at ``position``."""
+        return await self._send_request(
+            "textDocument/hover",
+            {
+                "textDocument": {"uri": uri},
+                "position": position.to_dict(),
+            },
+        )
+
+    async def signature_help(self, uri: str, position: Position) -> dict:
+        """Request signature help for ``uri`` at ``position``."""
+        return await self._send_request(
+            "textDocument/signatureHelp",
+            {
+                "textDocument": {"uri": uri},
+                "position": position.to_dict(),
+            },
+        )
+
     async def cancel_request(self, request_id: int) -> None:
         """Send a cancellation notification for a pending request."""
         await self._send_notification("$/cancelRequest", {"id": request_id})

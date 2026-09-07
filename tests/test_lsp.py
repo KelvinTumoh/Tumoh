@@ -322,3 +322,87 @@ def test_client_shutdown(monkeypatch):
         assert fake_process.waited
 
     asyncio.run(coro())
+
+
+def test_client_hover(monkeypatch):
+    async def coro():
+        stdout = asyncio.StreamReader()
+        stdin = FakeWriter()
+        fake_process = FakeProcess(stdout, stdin)
+
+        async def fake_create(*_args, **_kwargs):
+            return fake_process
+
+        monkeypatch.setattr(asyncio, "create_subprocess_exec", fake_create)
+
+        client = LSPClient(["mock-server"])
+        await client.start()
+
+        async def feed_response():
+            await asyncio.sleep(0)
+            stdout.feed_data(
+                encode_message(
+                    {
+                        "jsonrpc": "2.0",
+                        "id": 1,
+                        "result": {"contents": "int"},
+                    }
+                )
+            )
+
+        result = (
+            await asyncio.gather(
+                client.hover("file:///c:/project/main.py", Position(1, 2)),
+                feed_response(),
+            )
+        )[0]
+        assert result["result"]["contents"] == "int"
+
+        sent = parse_messages(stdin.buffer)
+        assert sent[0]["method"] == "textDocument/hover"
+        assert sent[0]["params"]["textDocument"]["uri"] == "file:///c:/project/main.py"
+        assert sent[0]["params"]["position"] == {"line": 1, "character": 2}
+
+    asyncio.run(coro())
+
+
+def test_client_signature_help(monkeypatch):
+    async def coro():
+        stdout = asyncio.StreamReader()
+        stdin = FakeWriter()
+        fake_process = FakeProcess(stdout, stdin)
+
+        async def fake_create(*_args, **_kwargs):
+            return fake_process
+
+        monkeypatch.setattr(asyncio, "create_subprocess_exec", fake_create)
+
+        client = LSPClient(["mock-server"])
+        await client.start()
+
+        async def feed_response():
+            await asyncio.sleep(0)
+            stdout.feed_data(
+                encode_message(
+                    {
+                        "jsonrpc": "2.0",
+                        "id": 1,
+                        "result": {"signatures": [{"label": "print(...)"}]},
+                    }
+                )
+            )
+
+        result = (
+            await asyncio.gather(
+                client.signature_help("file:///c:/project/main.py", Position(1, 2)),
+                feed_response(),
+            )
+        )[0]
+        assert result["result"]["signatures"][0]["label"] == "print(...)"
+
+        sent = parse_messages(stdin.buffer)
+        assert sent[0]["method"] == "textDocument/signatureHelp"
+        assert sent[0]["params"]["textDocument"]["uri"] == "file:///c:/project/main.py"
+        assert sent[0]["params"]["position"] == {"line": 1, "character": 2}
+
+    asyncio.run(coro())
