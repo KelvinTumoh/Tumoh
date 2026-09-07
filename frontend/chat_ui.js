@@ -103,7 +103,7 @@ function connectWebSocket() {
             }
             
             // Handle chat messages (echo from server)
-            if (data.type === 'chat') {
+            if (data.type === 'chat' || data.type === 'message') {
                 const messageData = data.message || data;
                 // Check if it's our own message (to avoid duplicate)
                 if (messageData.sender_id === userId) {

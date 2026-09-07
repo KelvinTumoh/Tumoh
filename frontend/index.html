@@ -75,7 +75,7 @@
         <div id="panel-body">
           <div id="terminal" class="panel hidden" role="tabpanel" aria-label="Terminal"></div>
           <div id="chat-section" class="panel" role="tabpanel" aria-label="Chat">
-            <div class="chat-header" style="padding: 10px; background: #313244; border-bottom: 1px solid #45475a; display: flex; justify-content: space-between; align-items: center;">
+            <div class="chat-header" style="padding: 10px; background: #313244; border-bottom: 1px solid #45475a; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
               <select id="room-selector" style="background: #45475a; color: #cdd6f4; border: 1px solid #585b70; padding: 5px 10px; border-radius: 4px;">
                 <option value="General">General</option>
                 <option value="Lobby">Lobby</option>
@@ -83,10 +83,10 @@
               </select>
               <span id="connection-status" style="color: #a6e3a1;">Connected</span>
             </div>
-            <div id="chat-messages" style="flex: 1; overflow-y: auto; padding: 10px; background: #1e1e2e; min-height: 200px; color: #cdd6f4;">
+            <div id="chat-messages" style="flex: 1; overflow-y: auto; padding: 10px; background: #1e1e2e; min-height: 0; color: #cdd6f4;">
               <!-- Messages will appear here -->
             </div>
-            <div class="chat-input-area" style="padding: 10px; background: #313244; border-top: 1px solid #45475a; display: flex; gap: 8px; align-items: center;">
+            <div class="chat-input-area" style="padding: 10px; background: #313244; border-top: 1px solid #45475a; display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
               <div class="input-controls" style="display: flex; gap: 4px;">
                 <button id="voice-btn" style="background: #45475a; border: 1px solid #585b70; color: #cdd6f4; padding: 5px 8px; border-radius: 4px; cursor: pointer;">🎙️</button>
                 <button id="image-btn" style="background: #45475a; border: 1px solid #585b70; color: #cdd6f4; padding: 5px 8px; border-radius: 4px; cursor: pointer;">🖼️</button>
