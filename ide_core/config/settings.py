@@ -31,7 +31,7 @@ class IDESettings(BaseSettings):
             "venv",
         ]
     )
-    jwt_secret: str = "dev-secret-change-in-production"
+    jwt_secret: str = "dev-secret-change-in-production-32bytes"
     jwt_algorithm: str = "HS256"
     jwt_expiry_minutes: int = 60
     log_level: str = "INFO"

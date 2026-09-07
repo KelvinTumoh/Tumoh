@@ -14,6 +14,7 @@ from websockets.asyncio.server import Server, ServerConnection, serve
 
 from ide_core.chat.websocket_server import ChatWebSocketServer
 from ide_core.config.settings import IDESettings
+from ide_core.deployment import ProductionReadiness
 from ide_core.diagnostics import DiagnosticManager
 from ide_core.document_manager import DocumentManager
 from ide_core.git.manager import GitManager
@@ -400,6 +401,8 @@ class EditorServer:
 async def _serve() -> None:
     """Start the production IDE WebSocket gateway from CLI defaults."""
     settings = IDESettings()
+    for warning in ProductionReadiness(settings).check():
+        logger.warning("Deployment readiness: %s", warning)
     lsp = LSPClient(shlex.split(settings.lsp_python_command))
     await lsp.start()
     try:
