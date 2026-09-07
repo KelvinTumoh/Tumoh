@@ -91,3 +91,38 @@ class IDESettings(BaseSettings):
     chat_message_history_limit: int = 100
     chat_presence_timeout: int = 60
     chat_enable_friends: bool = True
+
+    # Security / sandboxing settings
+    enable_security_manager: bool = True
+    allowed_shell_commands: list[str] = Field(default_factory=list)
+    blocked_shell_commands: list[str] = Field(
+        default_factory=lambda: [
+            "rm -rf",
+            "sudo",
+            "mkfs",
+            "dd if=",
+            "shutdown",
+            "reboot",
+            "format",
+            "> /dev/",
+            "| sh",
+            "curl |",
+            "wget |",
+        ]
+    )
+    require_confirmation_patterns: list[str] = Field(
+        default_factory=lambda: [
+            "rm ",
+            "sudo",
+            "git push",
+            "git reset",
+            "git clean",
+            "docker",
+            "curl",
+            "wget",
+            "pip install",
+            "npm install",
+            "yarn",
+        ]
+    )
+    audit_log_path: str = "security.log"

@@ -9,6 +9,7 @@ from typing import Any
 
 from ide_core.diagnostics import DiagnosticManager
 from ide_core.document_manager import DocumentManager
+from ide_core.security import SecurityManager
 
 
 class ToolRegistry:
@@ -19,10 +20,12 @@ class ToolRegistry:
         workspace: Path | str,
         document_manager: DocumentManager,
         diagnostic_manager: DiagnosticManager,
+        security_manager: SecurityManager | None = None,
     ) -> None:
         self._workspace = Path(workspace).expanduser().resolve()
         self._document_manager = document_manager
         self._diagnostic_manager = diagnostic_manager
+        self._security = security_manager or SecurityManager()
 
     # -----------------------------------------------------------------------
     # Schema export for LLM tool binding
@@ -66,6 +69,10 @@ class ToolRegistry:
                     "cwd": {
                         "type": "string",
                         "description": "Optional working directory for the command",
+                    },
+                    "confirmed": {
+                        "type": "boolean",
+                        "description": "Whether the user has confirmed a risky command",
                     },
                 },
                 ["command"],
@@ -163,8 +170,18 @@ class ToolRegistry:
         await asyncio.to_thread(_walk)
         return {"matches": matches, "count": len(matches)}
 
-    async def _run_command(self, command: str, cwd: str | None = None) -> dict:
+    async def _run_command(
+        self, command: str, cwd: str | None = None, confirmed: bool = False
+    ) -> dict:
         workdir = self._workspace if cwd is None else self._resolve(cwd)
+        decision = self._security.check_command(command, confirmed=confirmed)
+        if not decision["allowed"]:
+            return {
+                "exit_code": 1,
+                "stdout": "",
+                "stderr": decision["reason"],
+            }
+
         proc = await asyncio.create_subprocess_shell(
             command,
             stdout=asyncio.subprocess.PIPE,
