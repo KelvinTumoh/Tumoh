@@ -20,6 +20,7 @@ from ide_core.git.manager import GitManager
 from ide_core.lsp.client import LSPClient
 from ide_core.project.manager import ProjectManager
 from ide_core.security import SecurityManager
+from ide_core.static_server import StaticFileHandler
 from ide_core.tenant.manager import TenantManager
 from ide_core.tenant.middleware import TenantMiddleware
 from ide_core.terminal import TerminalManager
@@ -59,6 +60,7 @@ class EditorServer:
         self._middleware = TenantMiddleware(
             self._handle, self._tenant_manager, self._settings
         )
+        self._static = StaticFileHandler()
         self._server: Server | None = None
         self._clients: set[ServerConnection] = set()
 
@@ -109,6 +111,17 @@ class EditorServer:
             pass
         finally:
             self._clients.discard(ws)
+
+    async def _process_request(
+        self, connection: ServerConnection, request: Any
+    ) -> Any:
+        """Serve static files for HTTP requests and defer WebSocket upgrades."""
+        upgrade = request.headers.get("Upgrade", "").lower()
+        if upgrade != "websocket":
+            static_response = self._static.handle(request)
+            if static_response is not None:
+                return static_response
+        return await self._middleware.process_request(connection, request)
 
     def _tenant_uri(self, uri: str, tenant_id: str | None) -> str:
         """Return a tenant-scoped document URI."""
@@ -367,7 +380,7 @@ class EditorServer:
             self._middleware,
             self.host,
             self.port,
-            process_request=self._middleware.process_request,
+            process_request=self._process_request,
         )
         if self.port == 0:
             self.port = self._server.sockets[0].getsockname()[1]
