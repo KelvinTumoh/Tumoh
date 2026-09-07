@@ -19,6 +19,7 @@ from ide_core.document_manager import DocumentManager
 from ide_core.git.manager import GitManager
 from ide_core.lsp.client import LSPClient
 from ide_core.project.manager import ProjectManager
+from ide_core.security import SecurityManager
 from ide_core.tenant.manager import TenantManager
 from ide_core.tenant.middleware import TenantMiddleware
 from ide_core.terminal import TerminalManager
@@ -306,7 +307,12 @@ async def _serve() -> None:
     try:
         diagnostics = DiagnosticManager()
         documents = DocumentManager(lsp, diagnostics)
-        terminal = TerminalManager()
+        terminal = TerminalManager(
+            workspace=Path.cwd(),
+            security_manager=SecurityManager(settings),
+            max_runtime=300.0,
+            max_output_bytes=1_000_000,
+        )
         project = ProjectManager(Path.cwd())
         git = GitManager(Path.cwd())
         server = EditorServer(
