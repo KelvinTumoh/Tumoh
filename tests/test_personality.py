@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+
 from ide_core.config.settings import IDESettings
 from ide_core.personality import (
     Celebrator,
@@ -229,7 +231,7 @@ def test_friend_personality_build_rapport(tmp_path):
 def test_friend_personality_get_response(tmp_path):
     settings = _settings(tmp_path)
     friend = FriendPersonality(settings)
-    response = friend.get_response("u1", "t1", "Use the print function.")
+    response = asyncio.run(friend.get_response("u1", "t1", "Use the print function."))
     assert "Use the print function." in response
     assert "u1" in response
 
@@ -241,7 +243,7 @@ def test_feature_flag_disabled(tmp_path):
     result = friend.interact("greet", "t1", "u1", {"time_of_day": "morning"})
     assert result["enabled"] is False
     assert "disabled" in result["message"].lower()
-    raw = friend.get_response("t1", "u1", "hello")
+    raw = asyncio.run(friend.get_response("t1", "u1", "hello"))
     assert raw == "hello"
 
 

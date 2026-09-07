@@ -9,7 +9,10 @@ import os
 import uuid
 from pathlib import Path
 
+import pytest
 import websockets
+
+pytestmark = pytest.mark.integration
 
 SERVER_URL = os.environ.get("IDE_LIVE_CHAT_URL", "ws://localhost:8765")
 ROOM_ID = "live-room"

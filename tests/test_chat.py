@@ -292,7 +292,7 @@ def test_websocket_handle_connection(tmp_path):
     fake_ws = AsyncMock()
     fake_ws.request_headers = {"Authorization": f"Bearer {token}"}
     fake_ws.recv = AsyncMock(side_effect=[
-        json.dumps({"room_id": "r1", "message": message}),
+        json.dumps({"type": "chat", "room_id": "r1", "message": message}),
         websockets.ConnectionClosed(None, None),
     ])
 
