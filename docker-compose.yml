@@ -1,40 +1,13 @@
-version: "3.9"
-
 services:
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  ide:
+    build: .
     ports:
-      - "8765:8765"
+      - "${IDE_PORT:-8765}:${IDE_PORT:-8765}"
+    env_file:
+      - .env
     environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - DEFAULT_MODEL=${DEFAULT_MODEL:-gpt-4o}
-      - LSP_PYTHON_COMMAND=${LSP_PYTHON_COMMAND:-pylsp}
-      - JWT_SECRET=${JWT_SECRET}
-      - REDIS_URL=redis://redis:6379
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/ide
-    depends_on:
-      - redis
-      - postgres
+      IDE_HOST: 0.0.0.0
     volumes:
-      - ./workspace:/app/workspace
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: ide
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-volumes:
-  postgres_data:
+      - ./workspace:/workspace
+    working_dir: /workspace
+    command: ["python", "-m", "ide_core.server"]

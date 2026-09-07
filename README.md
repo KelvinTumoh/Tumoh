@@ -13,7 +13,7 @@
   </a>
 </p>
 
-The **IDE Core Engine v2.0.0** is a modular, open-source AI IDE backend written in Python. It now unifies a piece-table text buffer, LSP client, multi-tenant middleware, multimodal input processing, creative media generation, smart decision ranking, a friend personality layer, and an autonomous ReAct agent into a single WebSocket gateway that powers a Monaco + xterm.js frontend with a built-in chat interface.
+The **IDE Core Engine v2.0.0** is a modular, open-source AI IDE backend written in Python. It unifies a piece-table text buffer, LSP client, multi-tenant middleware, multimodal input processing, creative media generation, smart decision ranking, a friend personality layer, and an autonomous ReAct agent into a single WebSocket gateway. A professional workbench UI (Monaco + xterm.js + chat) is served by the server itself, and the backend ships with security gating, session/autosave reliability, extension loading, and production-readiness checks.
 
 ## Features
 
@@ -30,7 +30,11 @@ The **IDE Core Engine v2.0.0** is a modular, open-source AI IDE backend written 
 - **xterm.js PTY** — `TerminalManager` spawns a persistent shell and streams output to the UI.
 - **Git Diffing** — `GitManager` provides status, staging, commit, and per-file diff support.
 - **Pydantic Settings** — configuration loaded from `.env` or environment variables.
-- **181 passing pytest suite** covering buffer, document, LSP, agent, server, tenant, multimodal, creative, smart decision, personality, and chat tests.
+- **218 passing pytest suite** covering buffer, document, LSP, agent, server, tenant, multimodal, creative, smart decision, personality, chat, security, extensions, reliability, and deployment tests.
+- **Security / Sandboxing** — command allowlists, blocklists, confirmation patterns, and terminal cwd jailing.
+- **Session + Autosave** — crash recovery via session snapshots and periodic dirty-buffer autosave.
+- **Extension Loader** — discover and load plugins from `extensions_dir` with a hook registry.
+- **Production Readiness** — startup checks for JWT secret length, insecure algorithms, and unsafe defaults.
 
 ## Architecture
 
@@ -130,19 +134,20 @@ pip install -r requirements.txt
 pip install python-lsp-server
 ```
 
-4. Create a `.env` file with at least a JWT secret:
+4. Create a `.env` file with at least a 32-byte JWT secret:
 
 ```bash
-JWT_SECRET=change-me-in-production
+cp .env.example .env
+# edit .env and set a strong JWT_SECRET
 ```
 
-5. Start the WebSocket server:
+5. Start the IDE server (it serves the workbench UI and WebSocket on the same port):
 
 ```bash
 python -m ide_core.server
 ```
 
-6. Open `frontend/index.html` in a browser (or serve it with any static file server).
+6. Open `http://localhost:8765` in your browser.
 
 ## Configuration
 
@@ -158,7 +163,7 @@ python -m ide_core.server
 | `LSP_PYTHON_COMMAND` | `pylsp` | Command to start the Python language server. |
 | `LSP_TYPESCRIPT_COMMAND` | `typescript-language-server --stdio` | TypeScript language server command. |
 | `DIRECTORY_EXCLUSIONS` | `__pycache__,node_modules,.git,.venv,venv` | Directory exclude list (parsed as JSON list in `.env`). |
-| `JWT_SECRET` | `dev-secret-change-in-production` | Secret for JWT token signing. |
+| `JWT_SECRET` | `dev-secret-change-in-production-32bytes` | Secret for JWT token signing (>= 32 bytes). |
 | `JWT_ALGORITHM` | `HS256` | JWT algorithm. |
 | `JWT_EXPIRY_MINUTES` | `60` | JWT expiry. |
 | `LOG_LEVEL` | `INFO` | Log level. |
@@ -179,6 +184,9 @@ python -m ide_core.server
 | `CHAT_MESSAGE_HISTORY_LIMIT` | `100` | Max messages persisted per room. |
 | `CHAT_PRESENCE_TIMEOUT` | `60` | Presence timeout in seconds. |
 | `CHAT_ENABLE_FRIENDS` | `True` | Decorate chat responses with FriendPersonality. |
+| `ENABLE_SECURITY_MANAGER` | `True` | Gate agent and terminal commands. |
+| `ENABLE_EXTENSIONS` | `True` | Load plugins from `extensions_dir`. |
+| `EXTENSIONS_DIR` | `extensions` | Directory containing plugin folders. |
 
 ## Development
 

@@ -55,7 +55,8 @@ function connectWebSocket() {
     if (isConnecting) return;
     isConnecting = true;
     
-    const wsUrl = 'ws://localhost:8765';
+    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${proto}//${window.location.host}`;
     console.log('🔌 Connecting to:', wsUrl);
     
     try {

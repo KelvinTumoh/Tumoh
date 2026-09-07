@@ -4,7 +4,10 @@ require.config({
   paths: { vs: "https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs" },
 });
 
-const WS_URL = "ws://localhost:8765";
+const WS_URL = (() => {
+  const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+  return `${proto}//${window.location.host}`;
+})();
 const DOC_URI = "file:///project/main.py";
 const LANGUAGE_ID = "python";
 const INITIAL_CONTENT = "# Start typing...\n";
