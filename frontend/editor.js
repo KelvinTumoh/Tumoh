@@ -47,18 +47,24 @@ require(["vs/editor/editor.main"], function () {
   let completionId = 0;
   const pendingCompletions = new Map();
 
+  function sendMessage(payload) {
+    if (ws.readyState !== WebSocket.OPEN) {
+      console.warn("WebSocket not open; skipping message:", payload.type);
+      return;
+    }
+    ws.send(JSON.stringify(payload));
+  }
+
   ws.addEventListener("open", () => {
-    ws.send(
-      JSON.stringify({
-        type: "doc_open",
-        uri: DOC_URI,
-        language_id: LANGUAGE_ID,
-        content: model.getValue(),
-      })
-    );
-    ws.send(JSON.stringify({ type: "get_tree" }));
-    ws.send(JSON.stringify({ type: "get_project" }));
-    ws.send(JSON.stringify({ type: "git_status" }));
+    sendMessage({
+      type: "doc_open",
+      uri: DOC_URI,
+      language_id: LANGUAGE_ID,
+      content: model.getValue(),
+    });
+    sendMessage({ type: "get_tree" });
+    sendMessage({ type: "get_project" });
+    sendMessage({ type: "git_status" });
   });
 
   ws.addEventListener("message", (event) => {
@@ -123,15 +129,13 @@ require(["vs/editor/editor.main"], function () {
     for (const change of event.changes) {
       const start = model.getOffsetAt(change.range.getStartPosition());
       const end = model.getOffsetAt(change.range.getEndPosition());
-      ws.send(
-        JSON.stringify({
-          type: "doc_edit",
-          uri: DOC_URI,
-          start_index: start,
-          end_index: end,
-          new_text: change.text,
-        })
-      );
+      sendMessage({
+        type: "doc_edit",
+        uri: DOC_URI,
+        start_index: start,
+        end_index: end,
+        new_text: change.text,
+      });
     }
   });
 
@@ -144,14 +148,12 @@ require(["vs/editor/editor.main"], function () {
         pendingCompletions.set(requestId, resolve);
       });
 
-      ws.send(
-        JSON.stringify({
-          type: "completion",
-          uri: DOC_URI,
-          offset: offset,
-          request_id: requestId,
-        })
-      );
+      sendMessage({
+        type: "completion",
+        uri: DOC_URI,
+        offset: offset,
+        request_id: requestId,
+      });
 
       const items = await promise;
       return {
@@ -167,7 +169,7 @@ require(["vs/editor/editor.main"], function () {
 
   if (term) {
     term.onData((data) => {
-      ws.send(JSON.stringify({ type: "pty_input", data }));
+      sendMessage({ type: "pty_input", data });
     });
   }
 
@@ -223,7 +225,7 @@ require(["vs/editor/editor.main"], function () {
       row.className = "git-entry";
       row.innerHTML = `<span class="git-status">${entry.status}</span><span>${entry.path}</span>`;
       row.addEventListener("click", () => {
-        ws.send(JSON.stringify({ type: "git_diff", path: entry.path }));
+        sendMessage({ type: "git_diff", path: entry.path });
         document.getElementById("tab-diff").click();
       });
       container.appendChild(row);
