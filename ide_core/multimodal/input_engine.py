@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Optional
 
 from ide_core.config.settings import IDESettings
+from ide_core.creative.intent_engine import CreativeIntentEngine
 from ide_core.logging.logger import IDELogger
 
 from .document_processor import DocumentProcessor
@@ -16,16 +16,14 @@ from .pdf_processor import PDFProcessor
 from .utils import detect_mime_type
 from .voice_processor import VoiceProcessor
 
-from ide_core.creative.intent_engine import CreativeIntentEngine
-
 
 class MultimodalInputEngine:
     """Transform raw multimodal payloads into structured agent-ready context."""
 
     def __init__(
         self,
-        settings: Optional[IDESettings] = None,
-        logger: Optional[IDELogger] = None,
+        settings: IDESettings | None = None,
+        logger: IDELogger | None = None,
     ) -> None:
         self._settings = settings or IDESettings()
         self._logger = logger or IDELogger(self._settings)

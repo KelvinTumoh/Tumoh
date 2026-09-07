@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Optional
-
 from ide_core.config.settings import IDESettings
 from ide_core.logging.logger import IDELogger
+from ide_core.smart_decision.assistant import SmartAssistant
+from ide_core.smart_decision.models import DecisionContext, DecisionOption
 
 from .generators.image_gen import ImageGenerator
 from .generators.sound_gen import SoundGenerator
@@ -14,17 +14,14 @@ from .intent_engine import CreativeIntentEngine
 from .models import CreativeDomain, CreativeRequest, CreativeResult
 from .tool_installer import ToolInstaller
 
-from ide_core.smart_decision.assistant import SmartAssistant
-from ide_core.smart_decision.models import DecisionContext, DecisionOption
-
 
 class CreativeAgent:
     """Orchestrate creative intent, tool installation, and artifact generation."""
 
     def __init__(
         self,
-        settings: Optional[IDESettings] = None,
-        logger: Optional[IDELogger] = None,
+        settings: IDESettings | None = None,
+        logger: IDELogger | None = None,
     ) -> None:
         self._settings = settings or IDESettings()
         self._logger = logger or IDELogger(self._settings)

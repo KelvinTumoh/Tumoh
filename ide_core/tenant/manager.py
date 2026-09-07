@@ -6,7 +6,6 @@ import json
 import shutil
 import uuid
 from pathlib import Path
-from typing import Optional
 
 from ide_core.config.settings import IDESettings
 from ide_core.tenant.models import Tenant
@@ -15,7 +14,7 @@ from ide_core.tenant.models import Tenant
 class TenantManager:
     """Persist and manage tenants in a local JSON file store."""
 
-    def __init__(self, settings: Optional[IDESettings] = None) -> None:
+    def __init__(self, settings: IDESettings | None = None) -> None:
         self._settings = settings or IDESettings()
         self._root = Path(self._settings.tenant_storage_path)
         self._tenants_dir = self._root / "tenants"
@@ -55,7 +54,7 @@ class TenantManager:
         self._workspace_path(tenant_id).mkdir(parents=True, exist_ok=True)
         return tenant
 
-    def get_tenant(self, tenant_id: str) -> Optional[Tenant]:
+    def get_tenant(self, tenant_id: str) -> Tenant | None:
         """Return a tenant by ID, or ``None`` if not found."""
         path = self._tenant_path(tenant_id)
         if not path.exists():
@@ -67,7 +66,7 @@ class TenantManager:
         except (json.JSONDecodeError, ValueError):
             return None
 
-    def get_tenant_by_subdomain(self, subdomain: str) -> Optional[Tenant]:
+    def get_tenant_by_subdomain(self, subdomain: str) -> Tenant | None:
         """Return the active tenant matching ``subdomain``."""
         for tenant in self.list_tenants():
             if tenant.subdomain == subdomain and tenant.is_active:
@@ -115,9 +114,9 @@ class TenantManager:
 
     def resolve_tenant(
         self,
-        tenant_id: Optional[str] = None,
-        subdomain: Optional[str] = None,
-    ) -> Optional[Tenant]:
+        tenant_id: str | None = None,
+        subdomain: str | None = None,
+    ) -> Tenant | None:
         """Resolve a tenant from an explicit ID or a subdomain."""
         if tenant_id:
             return self.get_tenant(tenant_id)

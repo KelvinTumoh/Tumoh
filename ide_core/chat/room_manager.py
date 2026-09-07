@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import uuid
 from pathlib import Path
-from typing import Optional
 
 from ide_core.config.settings import IDESettings
 
@@ -17,8 +16,8 @@ class RoomManager:
 
     def __init__(
         self,
-        settings: Optional[IDESettings] = None,
-        storage_root: Optional[Path] = None,
+        settings: IDESettings | None = None,
+        storage_root: Path | None = None,
     ) -> None:
         self._settings = settings or IDESettings()
         self._root = storage_root or Path("data/chat")
@@ -92,7 +91,7 @@ class RoomManager:
             if user_id in r.participants or not r.is_private
         ]
 
-    def get_room(self, tenant_id: str, room_id: str) -> Optional[ChatRoom]:
+    def get_room(self, tenant_id: str, room_id: str) -> ChatRoom | None:
         """Return a single room by ID, or ``None`` if not found."""
         for room in self._load(tenant_id):
             if room.room_id == room_id:

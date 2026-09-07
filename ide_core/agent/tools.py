@@ -4,9 +4,8 @@ from __future__ import annotations
 
 import asyncio
 import shutil
-import subprocess
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from ide_core.diagnostics import DiagnosticManager
 from ide_core.document_manager import DocumentManager
@@ -29,7 +28,7 @@ class ToolRegistry:
     # Schema export for LLM tool binding
     # -----------------------------------------------------------------------
 
-    def get_schemas(self) -> List[dict]:
+    def get_schemas(self) -> list[dict]:
         """Return OpenAI-style function schemas for every available tool."""
         return [
             _schema(
@@ -83,7 +82,7 @@ class ToolRegistry:
     # Execution
     # -----------------------------------------------------------------------
 
-    async def execute(self, name: str, arguments: Dict[str, Any]) -> dict:
+    async def execute(self, name: str, arguments: dict[str, Any]) -> dict:
         """Run the named tool with the provided JSON arguments."""
         try:
             handler = getattr(self, f"_{name}")
@@ -164,7 +163,7 @@ class ToolRegistry:
         await asyncio.to_thread(_walk)
         return {"matches": matches, "count": len(matches)}
 
-    async def _run_command(self, command: str, cwd: Optional[str] = None) -> dict:
+    async def _run_command(self, command: str, cwd: str | None = None) -> dict:
         workdir = self._workspace if cwd is None else self._resolve(cwd)
         proc = await asyncio.create_subprocess_shell(
             command,
@@ -196,7 +195,7 @@ class ToolRegistry:
         return target
 
 
-def _schema(name: str, description: str, properties: dict, required: List[str]) -> dict:
+def _schema(name: str, description: str, properties: dict, required: list[str]) -> dict:
     return {
         "type": "function",
         "function": {

@@ -4,13 +4,15 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import shlex
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 import websockets
 from websockets.asyncio.server import Server, ServerConnection, serve
 
+from ide_core.chat.websocket_server import ChatWebSocketServer
 from ide_core.config.settings import IDESettings
 from ide_core.diagnostics import DiagnosticManager
 from ide_core.document_manager import DocumentManager
@@ -22,6 +24,8 @@ from ide_core.tenant.middleware import TenantMiddleware
 from ide_core.terminal import TerminalManager
 from ide_core.utils.position import offset_to_position
 
+logger = logging.getLogger(__name__)
+
 
 class EditorServer:
     """WebSocket server bridging ``DocumentManager`` and Monaco UI clients."""
@@ -31,13 +35,14 @@ class EditorServer:
         lsp_client: LSPClient,
         document_manager: DocumentManager,
         diagnostic_manager: DiagnosticManager,
-        terminal_manager: Optional[TerminalManager] = None,
-        project_manager: Optional[ProjectManager] = None,
-        git_manager: Optional[GitManager] = None,
+        terminal_manager: TerminalManager | None = None,
+        project_manager: ProjectManager | None = None,
+        git_manager: GitManager | None = None,
         host: str = "localhost",
         port: int = 8765,
-        settings: Optional[IDESettings] = None,
-        tenant_manager: Optional[TenantManager] = None,
+        settings: IDESettings | None = None,
+        tenant_manager: TenantManager | None = None,
+        chat_server: ChatWebSocketServer | None = None,
     ) -> None:
         self._lsp_client = lsp_client
         self._document_manager = document_manager
@@ -49,17 +54,18 @@ class EditorServer:
         self.port = port
         self._settings = settings or IDESettings()
         self._tenant_manager = tenant_manager or TenantManager(self._settings)
+        self._chat = chat_server or ChatWebSocketServer(self._settings)
         self._middleware = TenantMiddleware(
             self._handle, self._tenant_manager, self._settings
         )
-        self._server: Optional[Server] = None
-        self._clients: Set[ServerConnection] = set()
+        self._server: Server | None = None
+        self._clients: set[ServerConnection] = set()
 
         diagnostic_manager.on_update(self._on_diagnostics)
         if self._terminal is not None:
             self._terminal.on_output(self._on_pty_output)
 
-    async def _on_diagnostics(self, uri: str, diagnostics: List[dict]) -> None:
+    async def _on_diagnostics(self, uri: str, diagnostics: list[dict]) -> None:
         """Broadcast diagnostics to every connected UI client."""
         await self._broadcast(
             {"type": "diagnostics", "uri": uri, "diagnostics": diagnostics}
@@ -69,13 +75,13 @@ class EditorServer:
         """Broadcast shell output to every connected UI client."""
         await self._broadcast({"type": "pty_output", "data": data})
 
-    async def _broadcast(self, msg: Dict[str, Any]) -> None:
+    async def _broadcast(self, msg: dict[str, Any]) -> None:
         """Send a JSON message to all connected clients, pruning closed ones."""
         if not self._clients:
             return
 
         payload = json.dumps(msg)
-        closed: Set[ServerConnection] = set()
+        closed: set[ServerConnection] = set()
         for ws in self._clients:
             try:
                 await ws.send(payload)
@@ -103,20 +109,20 @@ class EditorServer:
         finally:
             self._clients.discard(ws)
 
-    def _tenant_uri(self, uri: str, tenant_id: Optional[str]) -> str:
+    def _tenant_uri(self, uri: str, tenant_id: str | None) -> str:
         """Return a tenant-scoped document URI."""
         if tenant_id is None:
             return uri
         return f"tenant://{tenant_id}/{uri}"
 
-    def _tenant_path(self, path: str, tenant_id: Optional[str]) -> str:
+    def _tenant_path(self, path: str, tenant_id: str | None) -> str:
         """Return a path resolved inside the tenant's isolated workspace."""
         if tenant_id is None:
             return path
         workspace = self._tenant_manager.workspace_for(tenant_id)
         return str(workspace / path.lstrip("/"))
 
-    async def _route(self, ws: ServerConnection, msg: Dict[str, Any]) -> None:
+    async def _route(self, ws: ServerConnection, msg: dict[str, Any]) -> None:
         """Dispatch an inbound WebSocket message to the correct handler."""
         msg_type = msg.get("type")
         tenant_id = getattr(ws, "tenant_id", None)
@@ -235,13 +241,31 @@ class EditorServer:
                 })
             )
 
+        elif msg_type in ("chat", "presence"):
+            ws.tenant_id = getattr(ws, "tenant_id", None) or "default"
+            ws.user_id = (
+                msg.get("user_id")
+                or (msg.get("message") or {}).get("sender_id")
+                or "anonymous"
+            )
+            try:
+                await self._chat._route_message(ws, msg)
+            except Exception as exc:
+                logger.exception("Chat/Presence handler failed for %s", msg_type)
+                await ws.send(
+                    json.dumps({
+                        "type": "error",
+                        "content": f"Chat handling failed: {exc}",
+                    })
+                )
+
         else:
             await ws.send(
-                json.dumps({"type": "error", "message": f"Unknown type {msg_type!r}"})
+                json.dumps({"type": "error", "content": f"Unknown type {msg_type!r}"})
             )
 
     @staticmethod
-    def _unwrap_completion_result(response: dict) -> List[dict]:
+    def _unwrap_completion_result(response: dict) -> list[dict]:
         """Normalize an LSP ``textDocument/completion`` response."""
         result = response.get("result")
         if isinstance(result, list):

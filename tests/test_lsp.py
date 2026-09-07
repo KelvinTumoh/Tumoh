@@ -2,7 +2,7 @@
 
 import asyncio
 import json
-from typing import Any, List
+from typing import Any
 
 import pytest
 
@@ -15,15 +15,14 @@ from ide_core.lsp.protocol import (
     encode_message,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
 
-def parse_messages(buffer: bytes) -> List[dict]:
+def parse_messages(buffer: bytes) -> list[dict]:
     """Parse all JSON-RPC messages from a byte buffer."""
-    messages: List[dict] = []
+    messages: list[dict] = []
     while b"\r\n\r\n" in buffer:
         header, _, rest = buffer.partition(b"\r\n\r\n")
         if b"Content-Length:" not in header:
@@ -242,7 +241,7 @@ def test_client_routes_notification(monkeypatch):
         monkeypatch.setattr(asyncio, "create_subprocess_exec", fake_create)
 
         client = LSPClient(["mock-server"])
-        received: List[Any] = []
+        received: list[Any] = []
         client.on("textDocument/publishDiagnostics", received.append)
         await client.start()
 

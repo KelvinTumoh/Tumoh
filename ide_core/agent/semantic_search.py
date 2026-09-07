@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from typing import Awaitable, Callable, Dict, List, Optional, Tuple
+from collections.abc import Awaitable, Callable
 
 
 class SemanticSearch:
@@ -11,13 +11,13 @@ class SemanticSearch:
 
     def __init__(
         self,
-        embed: Optional[Callable[[str], Awaitable[List[float]]]] = None,
-        cache: Optional[Dict[str, List[float]]] = None,
+        embed: Callable[[str], Awaitable[list[float]]] | None = None,
+        cache: dict[str, list[float]] | None = None,
     ) -> None:
         self._embed = embed
-        self._cache: Dict[str, List[float]] = cache if cache is not None else {}
+        self._cache: dict[str, list[float]] = cache if cache is not None else {}
 
-    async def index(self, chunks: Dict[str, str]) -> None:
+    async def index(self, chunks: dict[str, str]) -> None:
         """Embed and cache every chunk not already in the cache."""
         if self._embed is None:
             return
@@ -26,10 +26,10 @@ class SemanticSearch:
                 self._cache[key] = await self._embed(text)
 
     def search(
-        self, query_embedding: List[float], top_k: int = 5
-    ) -> List[Tuple[str, float]]:
+        self, query_embedding: list[float], top_k: int = 5
+    ) -> list[tuple[str, float]]:
         """Return the ``top_k`` most similar cached chunks."""
-        results: List[Tuple[str, float]] = []
+        results: list[tuple[str, float]] = []
         for key, emb in self._cache.items():
             sim = _cosine_similarity(query_embedding, emb)
             results.append((key, sim))
@@ -38,9 +38,9 @@ class SemanticSearch:
 
     def search_text(
         self, query: str, top_k: int = 5
-    ) -> List[Tuple[str, float]]:
+    ) -> list[tuple[str, float]]:
         """Fallback substring search over cached chunk text."""
-        results: List[Tuple[str, float]] = []
+        results: list[tuple[str, float]] = []
         for key, emb in self._cache.items():
             text = key.lower()
             score = 1.0 if query.lower() in text else 0.0
@@ -49,7 +49,7 @@ class SemanticSearch:
         return results[:top_k]
 
 
-def _cosine_similarity(a: List[float], b: List[float]) -> float:
+def _cosine_similarity(a: list[float], b: list[float]) -> float:
     dot = sum(x * y for x, y in zip(a, b))
     norm_a = math.sqrt(sum(x * x for x in a))
     norm_b = math.sqrt(sum(x * x for x in b))

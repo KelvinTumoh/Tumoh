@@ -9,7 +9,7 @@ from .models import CreativeDomain, CreativeRequest, CreativeResult
 __all__ = [
     "CreativeAgent",
     "CreativeDomain",
+    "CreativeIntentEngine",
     "CreativeRequest",
     "CreativeResult",
-    "CreativeIntentEngine",
 ]

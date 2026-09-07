@@ -6,8 +6,8 @@ from .input_engine import MultimodalInputEngine
 from .models import InputType, MultimodalInput, ProcessedInput
 
 __all__ = [
-    "MultimodalInputEngine",
     "InputType",
     "MultimodalInput",
+    "MultimodalInputEngine",
     "ProcessedInput",
 ]

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from ide_core.diagnostics import DiagnosticManager
 from ide_core.document_manager import DocumentManager
@@ -24,14 +24,14 @@ class ContextRetriever:
         self._tool_registry = tool_registry
 
     async def retrieve(
-        self, query: Optional[str] = None, max_files: int = 5
-    ) -> Dict[str, Any]:
+        self, query: str | None = None, max_files: int = 5
+    ) -> dict[str, Any]:
         """Build a context payload for the LLM.
 
         If ``query`` is supplied, the retriever also searches the workspace
         and reads the most relevant files.
         """
-        open_files: List[Dict[str, Any]] = []
+        open_files: list[dict[str, Any]] = []
         for doc in self._document_manager._documents.values():
             open_files.append(
                 {
@@ -42,7 +42,7 @@ class ContextRetriever:
                 }
             )
 
-        context: Dict[str, Any] = {
+        context: dict[str, Any] = {
             "open_files": open_files,
             "diagnostics": self._diagnostic_manager.all(),
             "recent_edits": self._document_manager.edit_history[-20:],

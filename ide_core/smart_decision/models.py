@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional
 
 
 @dataclass
@@ -14,7 +13,7 @@ class DecisionOption:
     name: str
     description: str
     score: float = 0.0
-    preview_url_or_path: Optional[str] = None
+    preview_url_or_path: str | None = None
     metadata: dict = field(default_factory=dict)
 
 
@@ -25,7 +24,7 @@ class DecisionContext:
     user_id: str
     tenant_id: str
     project_type: str = "general"
-    creative_domain: Optional[str] = None
+    creative_domain: str | None = None
     history: list[dict] = field(default_factory=list)
 
 

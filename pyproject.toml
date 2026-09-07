@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ide-core"
-version = "1.0.0"
+version = "2.0.0"
 description = "A modular, open-source IDE core engine with a piece table buffer, LSP client, ReAct agent, terminal PTY, and Git integration."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -26,6 +26,12 @@ dependencies = [
     "pyjwt>=2.13.0",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.6.0",
+    "mypy>=1.0.0",
+]
+
 [project.urls]
 Homepage = "https://github.com/your-org/ide-core"
 Repository = "https://github.com/your-org/ide-core"
@@ -34,3 +40,23 @@ Issues = "https://github.com/your-org/ide-core/issues"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["ide_core*"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "W",
+    "I",
+    "UP",
+]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = false
+warn_unused_ignores = false
+ignore_missing_imports = true
+disable_error_code = ["attr-defined", "arg-type", "union-attr", "operator", "assignment"]

@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any, Optional
+from typing import Any
 
 from ide_core.agent.orchestrator import AgentOrchestrator
 from ide_core.config.settings import IDESettings
 from ide_core.creative.agent_creative import CreativeAgent
 from ide_core.creative.intent_engine import CreativeIntentEngine
-from ide_core.creative.models import CreativeDomain, CreativeRequest, CreativeResult
+from ide_core.creative.models import CreativeResult
 from ide_core.multimodal.input_engine import MultimodalInputEngine
 from ide_core.multimodal.models import InputType, MultimodalInput, ProcessedInput
 from ide_core.personality.personality import FriendPersonality
@@ -23,12 +23,12 @@ class UnifiedChatIntegration:
 
     def __init__(
         self,
-        settings: Optional[IDESettings] = None,
-        multimodal: Optional[MultimodalInputEngine] = None,
-        creative: Optional[CreativeAgent] = None,
-        smart: Optional[SmartAssistant] = None,
-        personality: Optional[FriendPersonality] = None,
-        orchestrator: Optional[AgentOrchestrator] = None,
+        settings: IDESettings | None = None,
+        multimodal: MultimodalInputEngine | None = None,
+        creative: CreativeAgent | None = None,
+        smart: SmartAssistant | None = None,
+        personality: FriendPersonality | None = None,
+        orchestrator: AgentOrchestrator | None = None,
     ) -> None:
         self._settings = settings or IDESettings()
         self._multimodal = multimodal or MultimodalInputEngine(self._settings)
@@ -50,7 +50,8 @@ class UnifiedChatIntegration:
             text = processed.raw_text
 
             if self._looks_creative(text) or message.type == MessageType.CREATIVE_REQUEST:
-                return [self._decorate(await self._process_creative(text, message), context)]
+                creative_reply = await self._process_creative(text, message)
+                return [await self._decorate(creative_reply, context)]
 
             if self._orchestrator and processed.intent in ("create", "fix", "refactor"):
                 try:
@@ -58,12 +59,13 @@ class UnifiedChatIntegration:
                     final = result[-1]["content"] if result else "Task complete."
                 except Exception as exc:
                     final = f"[Agent task incomplete: {exc}]"
-                return [self._decorate(self._text_response(message, final), context)]
+                return [await self._decorate(self._text_response(message, final), context)]
 
-            return [self._decorate(self._text_response(message, text), context)]
+            return [await self._decorate(self._text_response(message, text), context)]
 
         if message.type == MessageType.CREATIVE_REQUEST:
-            return [self._decorate(await self._process_creative(message.content, message), context)]
+            creative_reply = await self._process_creative(message.content, message)
+            return [await self._decorate(creative_reply, context)]
 
         return [self._system(message, f"Unsupported message type: {message.type.value}")]
 
@@ -119,13 +121,19 @@ class UnifiedChatIntegration:
             "mockup",
             "ui",
             "sound",
+            "audio",
             "music",
+            "beat",
             "voice",
             "video",
+            "animation",
+            "promo",
+            "motion",
             "tutorial",
             "demo",
             "draw",
             "illustration",
+            "photo",
             "create",
             "generate",
         )
@@ -189,7 +197,7 @@ class UnifiedChatIntegration:
             metadata=result.metadata,
         )
 
-    def _decorate(self, response: ChatMessage, context: ChatContext) -> ChatMessage:
+    async def _decorate(self, response: ChatMessage, context: ChatContext) -> ChatMessage:
         if not self._settings.chat_enable_friends or not self._settings.enable_friend_personality:
             return response
 
@@ -203,7 +211,7 @@ class UnifiedChatIntegration:
             if celebrated.get("celebration"):
                 response.content = f"{celebrated['celebration']} {response.content}"
         else:
-            response.content = self._personality.get_response(
+            response.content = await self._personality.get_response(
                 context.user_id,
                 context.tenant_id,
                 response.content,

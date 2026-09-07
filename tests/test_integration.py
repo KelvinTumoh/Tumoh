@@ -1,13 +1,10 @@
 """End-to-end integration tests for the production IDE engine."""
 
 import asyncio
-import json
 import subprocess
 import tempfile
 from pathlib import Path
 from unittest.mock import AsyncMock
-
-import pytest
 
 from ide_core.agent.context import ContextRetriever
 from ide_core.agent.memory import AgentMemory

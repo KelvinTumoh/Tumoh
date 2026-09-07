@@ -23,14 +23,21 @@ require(["vs/editor/editor.main"], function () {
     { theme: "vs-dark", automaticLayout: true }
   );
 
-  const term = new Terminal({
-    theme: { background: "#1e1e1e", foreground: "#d4d4d4" },
-    cursorBlink: true,
-  });
-  term.open(document.getElementById("terminal"));
-  const fitAddon = new FitAddon.FitAddon();
-  term.loadAddon(fitAddon);
-  fitAddon.fit();
+  let term = null;
+  let fitAddon = null;
+
+  if (typeof Terminal !== "undefined" && typeof FitAddon !== "undefined") {
+    term = new Terminal({
+      theme: { background: "#1e1e1e", foreground: "#d4d4d4" },
+      cursorBlink: true,
+    });
+    term.open(document.getElementById("terminal"));
+    fitAddon = new FitAddon.FitAddon();
+    term.loadAddon(fitAddon);
+    fitAddon.fit();
+  } else {
+    console.warn("xterm.js or xterm-addon-fit not loaded; skipping terminal.");
+  }
 
   const ws = new WebSocket(WS_URL);
   let isRemoteUpdate = false;
@@ -82,7 +89,7 @@ require(["vs/editor/editor.main"], function () {
         break;
 
       case "pty_output":
-        term.write(msg.data);
+        if (term) term.write(msg.data);
         break;
 
       case "tree":
@@ -155,9 +162,11 @@ require(["vs/editor/editor.main"], function () {
     },
   });
 
-  term.onData((data) => {
-    ws.send(JSON.stringify({ type: "pty_input", data }));
-  });
+  if (term) {
+    term.onData((data) => {
+      ws.send(JSON.stringify({ type: "pty_input", data }));
+    });
+  }
 
   document.querySelectorAll(".tab").forEach((tab) => {
     tab.addEventListener("click", () => {
@@ -171,6 +180,9 @@ require(["vs/editor/editor.main"], function () {
       document
         .getElementById("diff-editor")
         .classList.toggle("visible", view === "diff");
+      document
+        .getElementById("chat-panel")
+        .classList.toggle("hidden", view !== "chat");
 
       if (view === "diff") {
         setTimeout(() => diffEditor.layout(), 50);

@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 
 class AgentMemory:
     """Simple JSON-backed key/value memory for the agent."""
 
-    def __init__(self, path: Optional[Path | str] = None) -> None:
+    def __init__(self, path: Path | str | None = None) -> None:
         self._path = Path(path).expanduser() if path else Path(".agent_memory.json")
         self._data: dict = {}
         self.load()

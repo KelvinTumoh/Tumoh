@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import uuid
 from pathlib import Path
-from typing import Optional
 
 from ide_core.config.settings import IDESettings
 from ide_core.logging.logger import IDELogger
@@ -18,8 +17,8 @@ class VideoGenerator:
 
     def __init__(
         self,
-        settings: Optional[IDESettings] = None,
-        logger: Optional[IDELogger] = None,
+        settings: IDESettings | None = None,
+        logger: IDELogger | None = None,
     ) -> None:
         self._settings = settings or IDESettings()
         self._logger = logger or IDELogger(self._settings)
@@ -68,7 +67,7 @@ class VideoGenerator:
 
         filepath.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
-        preview = f"Video placeholder: {description}".encode("utf-8")
+        preview = f"Video placeholder: {description}".encode()
 
         return CreativeResult(
             request_id=rid,

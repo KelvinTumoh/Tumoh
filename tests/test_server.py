@@ -4,7 +4,6 @@ import asyncio
 import json
 from unittest.mock import AsyncMock
 
-import pytest
 import websockets
 
 from ide_core.diagnostics import DiagnosticManager

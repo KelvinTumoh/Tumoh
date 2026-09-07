@@ -53,7 +53,7 @@ class ChatMessage:
         return data
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "ChatMessage":
+    def from_dict(cls, data: dict[str, Any]) -> ChatMessage:
         """Hydrate a message from its serialized dict form."""
         data = dict(data)
         data["type"] = MessageType(data["type"])
@@ -76,7 +76,7 @@ class ChatRoom:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "ChatRoom":
+    def from_dict(cls, data: dict[str, Any]) -> ChatRoom:
         """Hydrate a room from its serialized dict form."""
         return cls(**data)
 

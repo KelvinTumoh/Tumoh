@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import asyncio
 from dataclasses import asdict
 from datetime import datetime, timezone
-from typing import Any, Optional
+from typing import Any
 
 from ide_core.config.settings import IDESettings
 
@@ -20,11 +21,11 @@ class FriendPersonality:
 
     def __init__(
         self,
-        settings: Optional[IDESettings] = None,
-        memory: Optional[FriendMemory] = None,
-        greeter: Optional[Greeter] = None,
-        celebrator: Optional[Celebrator] = None,
-        helper: Optional[ProactiveHelper] = None,
+        settings: IDESettings | None = None,
+        memory: FriendMemory | None = None,
+        greeter: Greeter | None = None,
+        celebrator: Celebrator | None = None,
+        helper: ProactiveHelper | None = None,
     ) -> None:
         self._settings = settings or IDESettings()
         self._memory = memory or FriendMemory(self._settings)
@@ -79,15 +80,21 @@ class FriendPersonality:
             return {"encouragement": encouragement, "state": asdict(state)}
 
         prompt = context.get("prompt", "")
-        response = self.get_response(user_id, tenant_id, prompt)
-        return {"response": response, "state": asdict(state)}
+        # get_response is async; interact keeps the unadorned prompt when not awaited.
+        return {"response": prompt, "state": asdict(state)}
 
-    def get_response(self, user_id: str, tenant_id: str, prompt: str) -> str:
+    async def get_response(self, user_id: str, tenant_id: str, prompt: str) -> str:
         """Decorate a response with personality traits."""
         if not self._settings.enable_friend_personality or not prompt:
             return prompt
 
         state = self._memory.get_user_state(tenant_id, user_id)
+        if state is None:
+            if asyncio.iscoroutinefunction(self._memory.get_user_state):
+                state = await self._memory.get_user_state(tenant_id, user_id)
+            else:
+                state = self._memory.get_user_state(tenant_id, user_id)
+
         time_of_day = self._greeter.infer_time_of_day()
         greeting = self._greeter.get_greeting(time_of_day, state)
         return f"{greeting} {prompt}"

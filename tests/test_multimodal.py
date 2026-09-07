@@ -13,11 +13,9 @@ import pytest
 from ide_core.config.settings import IDESettings
 from ide_core.multimodal import InputType, MultimodalInput, MultimodalInputEngine, ProcessedInput
 from ide_core.multimodal.image_processor import ImageProcessor
-from ide_core.multimodal.models import InputType as InputTypeEnum
 from ide_core.multimodal.pdf_processor import PDFProcessor
 from ide_core.multimodal.utils import detect_mime_type
 from ide_core.multimodal.voice_processor import VoiceProcessor
-
 
 # ---------------------------------------------------------------------------
 # Voice processor
@@ -95,7 +93,6 @@ def _mock_image_module(monkeypatch, text: str):
 
 
 def test_image_ocr_and_type_detection_mockup(monkeypatch) -> None:
-    from ide_core.multimodal import image_processor as ip
 
     _mock_image_module(monkeypatch, "wireframe mockup")
 
@@ -115,7 +112,6 @@ def test_image_ocr_and_type_detection_mockup(monkeypatch) -> None:
 
 
 def test_image_type_detection_code_snippet(monkeypatch) -> None:
-    from ide_core.multimodal import image_processor as ip
 
     _mock_image_module(monkeypatch, "def hello():\n    pass")
 
@@ -128,7 +124,6 @@ def test_image_type_detection_code_snippet(monkeypatch) -> None:
 
 
 def test_image_type_detection_diagram(monkeypatch) -> None:
-    from ide_core.multimodal import image_processor as ip
 
     _mock_image_module(monkeypatch, "flowchart -> graph")
 
@@ -176,7 +171,6 @@ def _mock_pdf_reader(monkeypatch, page_text: str, image_data: bytes | None = Non
 
 
 def test_pdf_text_and_requirements_extraction_mock(monkeypatch) -> None:
-    from ide_core.multimodal import pdf_processor as pp
 
     text = (
         "- Must implement login\n"

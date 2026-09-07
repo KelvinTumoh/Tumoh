@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from .models import InputType
 
-
 _PDF_SIGNATURE = b"%PDF"
 _PNG_SIGNATURE = b"\x89PNG"
 _JPEG_SIGNATURE = b"\xff\xd8"

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 import websockets
 from websockets.datastructures import Headers
@@ -27,7 +27,7 @@ class TenantMiddleware:
         self,
         handler,
         tenant_manager: TenantManager,
-        settings: Optional[IDESettings] = None,
+        settings: IDESettings | None = None,
     ) -> None:
         self._handler = handler
         self._manager = tenant_manager
@@ -54,7 +54,7 @@ class TenantMiddleware:
         self,
         connection: websockets.ServerConnection,
         request: Request,
-    ) -> Optional[Response]:
+    ) -> Response | None:
         """Validate the tenant before the WebSocket handshake completes."""
         if not self._settings.enable_multi_tenant:
             return None
@@ -83,7 +83,7 @@ class TenantMiddleware:
 
     def _resolve(
         self, ws: websockets.ServerConnection
-    ) -> Optional[Tenant]:
+    ) -> Tenant | None:
         """Look up a tenant from ``X-Tenant-ID`` or the ``Host`` subdomain."""
         request = getattr(ws, "request", None)
         if request is None:
@@ -106,7 +106,7 @@ class TenantMiddleware:
             return None
         return tenant
 
-    def _subdomain_from_host(self, host: str) -> Optional[str]:
+    def _subdomain_from_host(self, host: str) -> str | None:
         """Extract the subdomain when the host ends with ``base_domain``."""
         host_part = host.split(":", 1)[0]
         base = f".{self._settings.base_domain}"

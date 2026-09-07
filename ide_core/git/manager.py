@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import subprocess
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class GitManager:
@@ -38,7 +38,7 @@ class GitManager:
         except (RuntimeError, FileNotFoundError):
             return False
 
-    async def status(self) -> List[Dict[str, Any]]:
+    async def status(self) -> list[dict[str, Any]]:
         """Return a list of status entries from ``git status --porcelain``."""
         text = await self._run("status", "--porcelain", "-u")
         entries = []
@@ -50,13 +50,13 @@ class GitManager:
             entries.append({"status": status, "path": path})
         return entries
 
-    async def stage(self, paths: List[str]) -> None:
+    async def stage(self, paths: list[str]) -> None:
         """Stage the given paths."""
         if not paths:
             return
         await self._run("add", "--", *paths)
 
-    async def unstage(self, paths: List[str]) -> None:
+    async def unstage(self, paths: list[str]) -> None:
         """Unstage the given paths."""
         if not paths:
             return
@@ -67,7 +67,7 @@ class GitManager:
         return await self._run("commit", "-m", message)
 
     async def diff(
-        self, paths: Optional[List[str]] = None, staged: bool = False
+        self, paths: list[str] | None = None, staged: bool = False
     ) -> str:
         """Return a diff for the given paths (default: unstaged)."""
         cmd = ["diff"]

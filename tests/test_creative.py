@@ -16,9 +16,8 @@ from ide_core.config.settings import IDESettings
 from ide_core.creative import (
     CreativeAgent,
     CreativeDomain,
-    CreativeRequest,
-    CreativeResult,
     CreativeIntentEngine,
+    CreativeRequest,
 )
 from ide_core.creative.generators.image_gen import ImageGenerator
 from ide_core.creative.generators.sound_gen import SoundGenerator

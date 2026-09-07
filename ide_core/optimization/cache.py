@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 import hashlib
-import json
 import pickle
 import time
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class SmartCache:
@@ -15,22 +14,22 @@ class SmartCache:
 
     def __init__(
         self,
-        disk_path: Optional[Path | str] = None,
+        disk_path: Path | str | None = None,
         default_ttl: float = 3600.0,
     ) -> None:
-        self._memory: Dict[str, Any] = {}
+        self._memory: dict[str, Any] = {}
         self._disk = Path(disk_path).expanduser() if disk_path else None
         self._default_ttl = default_ttl
 
     def _key(self, raw: str) -> str:
         return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-    def _disk_path(self, key: str) -> Optional[Path]:
+    def _disk_path(self, key: str) -> Path | None:
         if self._disk is None:
             return None
         return self._disk / f"{key}.pkl"
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         """Return the cached value if present and not expired."""
         internal = self._key(key)
         now = time.time()
@@ -55,10 +54,14 @@ class SmartCache:
 
         return None
 
-    def set(self, key: str, value: Any, ttl: Optional[float] = None) -> None:
+    def set(self, key: str, value: Any, ttl: float | None = None) -> None:
         """Store a value in the in-memory and disk tiers."""
         internal = self._key(key)
-        expiry = (time.time() + (ttl if ttl is not None else self._default_ttl)) if (ttl is not None and ttl >= 0) else None
+        expiry = (
+            time.time() + (ttl if ttl is not None else self._default_ttl)
+            if (ttl is not None and ttl >= 0)
+            else None
+        )
         self._memory[internal] = (value, expiry)
 
         path = self._disk_path(internal)

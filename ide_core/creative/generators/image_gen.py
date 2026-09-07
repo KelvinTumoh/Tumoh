@@ -5,7 +5,6 @@ from __future__ import annotations
 import html
 import uuid
 from pathlib import Path
-from typing import Optional
 
 from ide_core.config.settings import IDESettings
 from ide_core.logging.logger import IDELogger
@@ -18,8 +17,8 @@ class ImageGenerator:
 
     def __init__(
         self,
-        settings: Optional[IDESettings] = None,
-        logger: Optional[IDELogger] = None,
+        settings: IDESettings | None = None,
+        logger: IDELogger | None = None,
     ) -> None:
         self._settings = settings or IDESettings()
         self._logger = logger or IDELogger(self._settings)
@@ -43,7 +42,6 @@ class ImageGenerator:
     ) -> CreativeResult:
         """Generate a placeholder SVG logo for an application."""
         rid = uuid.uuid4().hex
-        safe_name = html.escape(app_name)
         path = self._write_svg(rid, f"{app_name}-logo", f"Logo for {app_name}", style)
         return CreativeResult(
             request_id=rid,

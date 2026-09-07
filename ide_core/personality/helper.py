@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from typing import Any, Optional
+from typing import Any
 
 
 class ProactiveHelper:
@@ -23,7 +23,7 @@ class ProactiveHelper:
 
     def analyze_workflow(
         self, action: str, history: list[dict[str, Any]]
-    ) -> Optional[str]:
+    ) -> str | None:
         """Detect patterns like repeated failures, rapid saves, or LSP squigglies."""
         if action == "build" and len(history) >= 3:
             recent = history[-3:]
@@ -48,7 +48,7 @@ class ProactiveHelper:
 
     def suggest_help(
         self, action: str, context: dict[str, Any]
-    ) -> Optional[str]:
+    ) -> str | None:
         """Generate a non-intrusive help offer when a pattern is detected."""
         if not self._can_suggest():
             return None

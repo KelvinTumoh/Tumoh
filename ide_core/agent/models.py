@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Dict, List
+from typing import Any
 
 
 @dataclass
@@ -13,7 +13,7 @@ class ToolCall:
 
     id: str
     name: str
-    arguments: Dict[str, any]
+    arguments: dict[str, Any]
 
 
 @dataclass
@@ -21,7 +21,7 @@ class AssistantMessage:
     """A response from the LLM, optionally containing tool calls."""
 
     content: str = ""
-    tool_calls: List[ToolCall] = field(default_factory=list)
+    tool_calls: list[ToolCall] = field(default_factory=list)
 
 
 class LLMClient(ABC):
@@ -29,6 +29,6 @@ class LLMClient(ABC):
 
     @abstractmethod
     async def complete(
-        self, messages: List[dict], tools: List[dict]
+        self, messages: list[dict], tools: list[dict]
     ) -> AssistantMessage:
         """Request the next assistant message from the LLM."""

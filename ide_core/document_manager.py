@@ -2,11 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Dict, Optional
-
 from ide_core.buffer import TextBuffer
 from ide_core.diagnostics import DiagnosticManager
-from ide_core.lsp.protocol import Position
 from ide_core.utils.position import offset_to_position
 
 
@@ -33,14 +30,14 @@ class DocumentManager:
     def __init__(self, lsp_client, diagnostic_manager: DiagnosticManager) -> None:
         self._lsp_client = lsp_client
         self._diagnostics = diagnostic_manager
-        self._documents: Dict[str, Document] = {}
-        self._edit_history: List[dict] = []
+        self._documents: dict[str, Document] = {}
+        self._edit_history: list[dict] = []
 
         lsp_client.on(
             "textDocument/publishDiagnostics", self._on_publish_diagnostics
         )
 
-    def _on_publish_diagnostics(self, params: Optional[dict]) -> None:
+    def _on_publish_diagnostics(self, params: dict | None) -> None:
         """Callback for LSP ``textDocument/publishDiagnostics`` notifications."""
         if not params:
             return
@@ -49,12 +46,12 @@ class DocumentManager:
         if uri is not None:
             self._diagnostics.update(uri, diagnostics)
 
-    def get(self, uri: str) -> Optional[Document]:
+    def get(self, uri: str) -> Document | None:
         """Return the open ``Document`` for ``uri``, if any."""
         return self._documents.get(uri)
 
     @property
-    def edit_history(self) -> List[dict]:
+    def edit_history(self) -> list[dict]:
         """Return a shallow copy of recent edits made through this manager."""
         return list(self._edit_history)
 

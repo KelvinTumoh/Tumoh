@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from ide_core.config.settings import IDESettings
 from ide_core.personality import FriendPersonality
@@ -13,6 +13,8 @@ from .config import AgentConfig
 from .context import ContextRetriever
 from .memory import AgentMemory
 from .models import AssistantMessage, LLMClient, ToolCall
+
+__all__ = ["AgentOrchestrator", "AssistantMessage", "LLMClient", "ToolCall"]
 from .operations import EditBatcher
 from .parallel import ParallelToolRunner
 from .semantic_search import SemanticSearch
@@ -27,12 +29,12 @@ class AgentOrchestrator:
         llm_client: LLMClient,
         tool_registry: ToolRegistry,
         context_retriever: ContextRetriever,
-        config: Optional[AgentConfig] = None,
-        terminal_manager: Optional[TerminalManager] = None,
-        agent_memory: Optional[AgentMemory] = None,
-        edit_batcher: Optional[EditBatcher] = None,
-        semantic_search: Optional[SemanticSearch] = None,
-        ide_settings: Optional[IDESettings] = None,
+        config: AgentConfig | None = None,
+        terminal_manager: TerminalManager | None = None,
+        agent_memory: AgentMemory | None = None,
+        edit_batcher: EditBatcher | None = None,
+        semantic_search: SemanticSearch | None = None,
+        ide_settings: IDESettings | None = None,
     ) -> None:
         self._llm = llm_client
         self._tools = tool_registry
@@ -44,10 +46,10 @@ class AgentOrchestrator:
         self._semantic = semantic_search
         self._ide_settings = ide_settings or IDESettings()
 
-    async def run(self, prompt: str) -> List[dict]:
+    async def run(self, prompt: str) -> list[dict]:
         """Run the agent loop until the LLM stops calling tools or max iterations."""
         system = self._build_system_prompt()
-        messages: List[dict] = [
+        messages: list[dict] = [
             {"role": "system", "content": system},
             {"role": "user", "content": prompt},
         ]
@@ -107,7 +109,7 @@ class AgentOrchestrator:
 
         return messages
 
-    async def _build_context(self, query: Optional[str] = None) -> Dict[str, Any]:
+    async def _build_context(self, query: str | None = None) -> dict[str, Any]:
         """Assemble the full agent context, including terminal and memory."""
         context = await self._context.retrieve(query=query)
 

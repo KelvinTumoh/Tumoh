@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional
 
 
 class CreativeDomain(Enum):
@@ -37,9 +36,9 @@ class CreativeRequest:
     request_id: str
     domain: CreativeDomain
     prompt: str
-    style: Optional[str] = None
+    style: str | None = None
     options: dict = field(default_factory=dict)
-    tenant_id: Optional[str] = None
+    tenant_id: str | None = None
 
 
 @dataclass
@@ -49,7 +48,7 @@ class CreativeResult:
     request_id: str
     success: bool
     domain: CreativeDomain
-    output_path: Optional[str] = None
-    preview_data: Optional[bytes] = None
+    output_path: str | None = None
+    preview_data: bytes | None = None
     metadata: dict = field(default_factory=dict)
     message: str = ""

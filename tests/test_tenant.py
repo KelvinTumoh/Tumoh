@@ -11,7 +11,8 @@ import pytest
 import websockets
 from websockets.datastructures import Headers
 
-from ide_core.auth.manager import AuthManager, User as AuthUser
+from ide_core.auth.manager import AuthManager
+from ide_core.auth.manager import User as AuthUser
 from ide_core.auth.tenant_aware import validate_tenant_access
 from ide_core.config.settings import IDESettings
 from ide_core.diagnostics import DiagnosticManager
@@ -148,7 +149,7 @@ def test_tenant_middleware_resolves_subdomain(tmp_path) -> None:
 
     middleware = TenantMiddleware(AsyncMock(), manager, settings)
     request = SimpleNamespace(
-        headers=Headers([("Host", f"acme.localhost:8765")])
+        headers=Headers([("Host", "acme.localhost:8765")])
     )
     ws = SimpleNamespace(
         request=request,

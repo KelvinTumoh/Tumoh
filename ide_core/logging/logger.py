@@ -6,7 +6,7 @@ import json
 import logging
 import logging.handlers
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from ide_core.config.settings import IDESettings
 
@@ -29,7 +29,7 @@ class _JsonFormatter(logging.Formatter):
 class IDELogger:
     """Rotating, structured JSON logger for events and agent actions."""
 
-    def __init__(self, settings: Optional[IDESettings] = None) -> None:
+    def __init__(self, settings: IDESettings | None = None) -> None:
         self._settings = settings or IDESettings()
         self._logger = logging.getLogger("ide_engine")
         self._logger.setLevel(getattr(logging, self._settings.log_level.upper(), logging.INFO))

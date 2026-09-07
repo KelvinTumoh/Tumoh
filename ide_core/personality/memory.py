@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import asdict
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from ide_core.config.settings import IDESettings
 
@@ -15,7 +15,7 @@ from .models import UserState
 class FriendMemory:
     """Manages per-tenant, per-user friend personality state on disk."""
 
-    def __init__(self, settings: Optional[IDESettings] = None) -> None:
+    def __init__(self, settings: IDESettings | None = None) -> None:
         self._settings = settings or IDESettings()
         self._root = Path(self._settings.personality_storage_path)
 

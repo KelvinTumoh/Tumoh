@@ -6,8 +6,9 @@ import asyncio
 import inspect
 import sys
 from collections import deque
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Coroutine, Deque, List, Optional
+from typing import Any
 
 
 class TerminalManager:
@@ -15,19 +16,19 @@ class TerminalManager:
 
     def __init__(
         self,
-        shell_command: Optional[List[str]] = None,
-        output_callback: Optional[Callable[[str], Any]] = None,
+        shell_command: list[str] | None = None,
+        output_callback: Callable[[str], Any] | None = None,
         max_history: int = 1000,
     ) -> None:
         self._shell = shell_command or self._default_shell()
-        self._process: Optional[asyncio.subprocess.Process] = None
+        self._process: asyncio.subprocess.Process | None = None
         self._output_callback = output_callback
-        self._output_buffer: Deque[str] = deque(maxlen=max_history)
-        self._read_tasks: List[asyncio.Task[None]] = []
+        self._output_buffer: deque[str] = deque(maxlen=max_history)
+        self._read_tasks: list[asyncio.Task[None]] = []
         self._cwd: str = str(Path.cwd())
 
     @staticmethod
-    def _default_shell() -> List[str]:
+    def _default_shell() -> list[str]:
         if sys.platform == "win32":
             return ["cmd.exe", "/Q"]
         return ["bash", "--norc", "--noprofile"]

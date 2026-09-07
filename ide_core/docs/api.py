@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, List
+from typing import Any
 
 from ide_core.agent.tools import ToolRegistry
 
@@ -36,10 +36,10 @@ class OpenAPIDocs:
     def __init__(self, tool_registry: ToolRegistry) -> None:
         self._tool_registry = tool_registry
 
-    def generate(self) -> Dict[str, Any]:
+    def generate(self) -> dict[str, Any]:
         """Return an OpenAPI document as a dictionary."""
         tool_schemas = self._tool_registry.get_schemas()
-        paths: Dict[str, Any] = {}
+        paths: dict[str, Any] = {}
 
         for name, props in self.WEBSOCKET_MESSAGES.items():
             paths[f"/ws/{name}"] = {

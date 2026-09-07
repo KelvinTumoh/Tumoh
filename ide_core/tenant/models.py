@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -51,4 +51,4 @@ class Invitation(BaseModel):
     tenant_id: str
     email: str
     role: Literal["owner", "admin", "member"] = "member"
-    expires_at: Optional[datetime] = None
+    expires_at: datetime | None = None

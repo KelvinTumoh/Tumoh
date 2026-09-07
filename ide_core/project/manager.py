@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import fnmatch
-import json
 import subprocess
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class ProjectManager:
@@ -18,7 +17,7 @@ class ProjectManager:
         self.root = Path(root).expanduser().resolve()
         self._gitignore_patterns = self._load_gitignore()
 
-    def _load_gitignore(self) -> List[str]:
+    def _load_gitignore(self) -> list[str]:
         gitignore = self.root / ".gitignore"
         if not gitignore.is_file():
             return []
@@ -47,7 +46,7 @@ class ProjectManager:
                 return True
         return False
 
-    def tree(self, subpath: Optional[Path | str] = None) -> Dict[str, Any]:
+    def tree(self, subpath: Path | str | None = None) -> dict[str, Any]:
         """Return a nested file tree starting from ``subpath``."""
         target = self.root if subpath is None else self.root / subpath
         if not target.is_dir():
@@ -58,9 +57,9 @@ class ProjectManager:
             }
         return self._scan(target)
 
-    def _scan(self, path: Path) -> Dict[str, Any]:
+    def _scan(self, path: Path) -> dict[str, Any]:
         rel = path.relative_to(self.root).as_posix() if path != self.root else "."
-        node: Dict[str, Any] = {
+        node: dict[str, Any] = {
             "name": path.name if path != self.root else self.root.name,
             "path": rel,
             "type": "directory",
@@ -88,7 +87,7 @@ class ProjectManager:
                 )
         return node
 
-    def git_status(self) -> Dict[str, Any]:
+    def git_status(self) -> dict[str, Any]:
         """Return a brief git status summary."""
         try:
             result = subprocess.run(
@@ -109,9 +108,9 @@ class ProjectManager:
         except FileNotFoundError:
             return {"installed": False, "error": "git not found"}
 
-    def environment(self) -> Dict[str, Any]:
+    def environment(self) -> dict[str, Any]:
         """Detect likely project tooling from root files."""
-        env: Dict[str, Any] = {}
+        env: dict[str, Any] = {}
         if (self.root / "pyproject.toml").exists():
             env["python"] = True
         if (self.root / "requirements.txt").exists():

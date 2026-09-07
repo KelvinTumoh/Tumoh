@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any
 
 from .tools import ToolRegistry
 
@@ -13,10 +13,10 @@ class EditBatcher:
     def __init__(self, tool_registry: ToolRegistry) -> None:
         self._tools = tool_registry
 
-    async def apply(self, edits: List[Dict[str, Any]]) -> Dict[str, Any]:
+    async def apply(self, edits: list[dict[str, Any]]) -> dict[str, Any]:
         """Apply every edit in order; restore originals if any edit fails."""
-        originals: Dict[str, str] = {}
-        written: List[str] = []
+        originals: dict[str, str] = {}
+        written: list[str] = []
 
         try:
             for edit in edits:
@@ -42,7 +42,7 @@ class EditBatcher:
             await self._rollback(originals)
             return {"success": False, "edited": written, "error": str(exc)}
 
-    async def _rollback(self, originals: Dict[str, str]) -> None:
+    async def _rollback(self, originals: dict[str, str]) -> None:
         for path, content in originals.items():
             if not content:
                 continue  # best-effort: leave new files in place

@@ -117,10 +117,23 @@
 }
 
 .chat-message img.preview,
-.chat-message audio {
+.chat-message audio,
+.chat-message .video-player {
   max-width: 100%;
   margin-top: 0.4rem;
   border-radius: 4px;
+}
+
+.chat-message .video-preview {
+  max-width: 100%;
+  margin-top: 0.4rem;
+}
+
+.chat-message .video-caption {
+  display: block;
+  font-size: 0.75rem;
+  color: #858585;
+  margin-top: 0.2rem;
 }
 
 .chat-input-bar {

@@ -5,8 +5,6 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-import pytest
-
 from ide_core.git.manager import GitManager
 
 

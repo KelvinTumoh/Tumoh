@@ -12,7 +12,6 @@ from ide_core.smart_decision import (
     DecisionContext,
     DecisionLearner,
     DecisionOption,
-    DecisionResult,
     OptionScorer,
     SmartAssistant,
     SmartChooser,

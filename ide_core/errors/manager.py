@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from enum import IntEnum
-from typing import Any, Callable, Dict, Optional, Type
+from typing import Any
 
 
 class Severity(IntEnum):
@@ -18,12 +19,12 @@ class ErrorManager:
     """Register per-exception recovery strategies and dispatch errors."""
 
     def __init__(self) -> None:
-        self._strategies: Dict[Type[BaseException], Callable[[BaseException], Any]] = {}
-        self._severity_map: Dict[Type[BaseException], Severity] = {}
+        self._strategies: dict[type[BaseException], Callable[[BaseException], Any]] = {}
+        self._severity_map: dict[type[BaseException], Severity] = {}
 
     def register(
         self,
-        exc_type: Type[BaseException],
+        exc_type: type[BaseException],
         handler: Callable[[BaseException], Any],
         severity: Severity = Severity.ERROR,
     ) -> Callable[[BaseException], Any]:
@@ -32,7 +33,7 @@ class ErrorManager:
         self._severity_map[exc_type] = severity
         return handler
 
-    def handle(self, exc: BaseException) -> Optional[Any]:
+    def handle(self, exc: BaseException) -> Any | None:
         """Dispatch an exception to its registered handler, if any."""
         for exc_type in type(exc).__mro__:
             if exc_type in self._strategies:

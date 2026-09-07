@@ -13,7 +13,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parent.parent
 INIT_FILE = ROOT / "ide_core" / "__init__.py"
 PYPROJECT_FILE = ROOT / "pyproject.toml"

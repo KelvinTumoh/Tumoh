@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 import uuid
-from typing import Any, Optional, Union
+from typing import Any
 
 from .models import CreativeDomain, CreativeRequest
 
@@ -30,13 +30,13 @@ class CreativeIntentEngine:
         )
 
     async def interpret(
-        self, text_or_processed_input: Union[str, Any]
+        self, text_or_processed_input: str | Any
     ) -> CreativeRequest:
         """Async wrapper around the synchronous interpretation logic."""
         return self.interpret_text(text_or_processed_input)
 
     def interpret_text(
-        self, text_or_processed_input: Union[str, Any]
+        self, text_or_processed_input: str | Any
     ) -> CreativeRequest:
         """Turn raw text or a processed input into a creative request."""
         if hasattr(text_or_processed_input, "raw_text"):
@@ -80,16 +80,25 @@ class CreativeIntentEngine:
 
         if any(
             w in t
-            for w in ("background music", "soundtrack", "music track", "bgm")
+            for w in ("background music", "soundtrack", "music track", "bgm", "music", "beat")
         ):
             return CreativeDomain.SOUND
 
-        if any(w in t for w in ("sound", "sfx", "audio effect", "jingle")):
+        if any(w in t for w in ("sound", "sfx", "audio effect", "audio", "jingle")):
             return CreativeDomain.SOUND
 
         if any(
             w in t
-            for w in ("video", "demo", "tutorial", "walkthrough", "screen recording")
+            for w in (
+                "video",
+                "demo",
+                "tutorial",
+                "walkthrough",
+                "screen recording",
+                "animation",
+                "promo",
+                "motion",
+            )
         ):
             return CreativeDomain.VIDEO
 
@@ -102,7 +111,7 @@ class CreativeIntentEngine:
         # Default to a generic image when a creative keyword is present.
         return CreativeDomain.IMAGE
 
-    def _extract_style(self, text: str) -> Optional[str]:
+    def _extract_style(self, text: str) -> str | None:
         t = text.lower()
         for style in self._style_keywords:
             if style in t:
@@ -115,7 +124,7 @@ class CreativeIntentEngine:
             key = match.group(1).lower()
             raw_value = match.group(2)
             if raw_value.isdigit():
-                value: Union[int, str] = int(raw_value)
+                value: int | str = int(raw_value)
             else:
                 value = raw_value
             options[key] = value

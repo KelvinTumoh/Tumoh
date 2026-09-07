@@ -2,11 +2,6 @@
 
 from __future__ import annotations
 
-import time
-from dataclasses import asdict
-
-import pytest
-
 from ide_core.config.settings import IDESettings
 from ide_core.personality import (
     Celebrator,
@@ -251,8 +246,8 @@ def test_feature_flag_disabled(tmp_path):
 
 
 def test_orchestrator_friend_directive_respects_flag():
-    from ide_core.agent.orchestrator import AgentOrchestrator
     from ide_core.agent.config import AgentConfig
+    from ide_core.agent.orchestrator import AgentOrchestrator
 
     settings = IDESettings()
     settings.enable_friend_personality = True

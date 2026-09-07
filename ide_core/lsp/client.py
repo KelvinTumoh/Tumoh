@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import asyncio
-import json
 import os
-from collections.abc import Awaitable, Callable
-from typing import Any, Dict, List, Optional
+from collections.abc import Callable
+from typing import Any
 
 from .protocol import Position, TextDocumentItem, decode_message, encode_message
 
@@ -19,19 +18,19 @@ class LSPClient:
     caller through the :meth:`on` callback registration API.
     """
 
-    def __init__(self, command: List[str]) -> None:
+    def __init__(self, command: list[str]) -> None:
         self._command = command
-        self._process: Optional[asyncio.subprocess.Process] = None
-        self._reader: Optional[asyncio.StreamReader] = None
-        self._writer: Optional[asyncio.StreamWriter] = None
-        self._read_task: Optional[asyncio.Task[None]] = None
+        self._process: asyncio.subprocess.Process | None = None
+        self._reader: asyncio.StreamReader | None = None
+        self._writer: asyncio.StreamWriter | None = None
+        self._read_task: asyncio.Task[None] | None = None
         self._request_id = 0
-        self._pending: Dict[int, asyncio.Future[dict]] = {}
-        self._callbacks: Dict[str, List[Callable[[Optional[dict]], Any]]] = {}
+        self._pending: dict[int, asyncio.Future[dict]] = {}
+        self._callbacks: dict[str, list[Callable[[dict | None], Any]]] = {}
 
     def on(
-        self, method: str, callback: Callable[[Optional[dict]], Any]
-    ) -> Callable[[Optional[dict]], Any]:
+        self, method: str, callback: Callable[[dict | None], Any]
+    ) -> Callable[[dict | None], Any]:
         """Register a callback for server notifications or requests."""
         self._callbacks.setdefault(method, []).append(callback)
         return callback
@@ -112,14 +111,14 @@ class LSPClient:
         self._writer.write(encode_message(msg))
         await self._writer.drain()
 
-    async def _send_notification(self, method: str, params: Optional[dict] = None) -> None:
+    async def _send_notification(self, method: str, params: dict | None = None) -> None:
         """Send a notification that does not expect a response."""
         msg: dict = {"jsonrpc": "2.0", "method": method}
         if params is not None:
             msg["params"] = params
         await self._send(msg)
 
-    async def _send_request(self, method: str, params: Optional[dict] = None) -> dict:
+    async def _send_request(self, method: str, params: dict | None = None) -> dict:
         """Send a request and await its JSON-RPC response."""
         request_id = self._next_id()
         msg: dict = {"jsonrpc": "2.0", "id": request_id, "method": method}
@@ -169,7 +168,7 @@ class LSPClient:
         )
 
     async def did_change(
-        self, uri: str, version: int, content_changes: List[dict]
+        self, uri: str, version: int, content_changes: list[dict]
     ) -> None:
         """Notify the server that a document has changed."""
         await self._send_notification(

@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import asdict
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from ide_core.config.settings import IDESettings
 
@@ -15,7 +15,7 @@ from .models import DecisionOption
 class DecisionLearner:
     """Learn from user feedback and persist per-tenant, per-user preferences."""
 
-    def __init__(self, settings: Optional[IDESettings] = None) -> None:
+    def __init__(self, settings: IDESettings | None = None) -> None:
         self._settings = settings or IDESettings()
         self._root = Path(self._settings.preference_storage_path)
 
@@ -98,7 +98,7 @@ class DecisionLearner:
         decision_id: str,
         selected_option_id: str,
         rating: float,
-        comments: Optional[str] = None,
+        comments: str | None = None,
     ) -> dict[str, float]:
         """Update preference weights based on user feedback."""
         prefs = await self.get_user_preferences(tenant_id, user_id)

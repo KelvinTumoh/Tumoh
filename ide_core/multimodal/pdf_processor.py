@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import io
 import re
-from typing import Optional
 
 from ide_core.config.settings import IDESettings
 from ide_core.logging.logger import IDELogger
@@ -28,8 +27,8 @@ class PDFProcessor:
 
     def __init__(
         self,
-        settings: Optional[IDESettings] = None,
-        logger: Optional[IDELogger] = None,
+        settings: IDESettings | None = None,
+        logger: IDELogger | None = None,
     ) -> None:
         self._settings = settings or IDESettings()
         self._logger = logger or IDELogger(self._settings)

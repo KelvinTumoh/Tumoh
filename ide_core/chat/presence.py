@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from .models import ChatMessage, MessageType, _now_iso
 
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class PresenceManager:
     """Track online users and broadcast presence events per tenant/room."""
 
-    def __init__(self, room_manager: Optional[RoomManager] = None) -> None:
+    def __init__(self, room_manager: RoomManager | None = None) -> None:
         self._room_manager = room_manager
         self._online: dict[str, set[str]] = {}
 

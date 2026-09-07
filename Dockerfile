@@ -15,4 +15,7 @@ COPY . /app
 
 EXPOSE 8765
 
-CMD ["python", "-c", "print('IDE Engine container ready. Start the WebSocket server or agent with the configured entrypoint.')"]
+ENV IDE_HOST=0.0.0.0
+ENV IDE_PORT=8765
+
+CMD ["python", "-m", "ide_core.server"]

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import List
 
 
 class _Source(str, Enum):
@@ -44,8 +43,8 @@ class TextBuffer:
 
     def __init__(self, text: str = "") -> None:
         self._original: str = text
-        self._add: List[str] = []
-        self._pieces: List[_Piece] = (
+        self._add: list[str] = []
+        self._pieces: list[_Piece] = (
             [_Piece(_Source.ORIGINAL, 0, len(text))] if text else []
         )
         self._length: int = len(text)
@@ -119,7 +118,7 @@ class TextBuffer:
 
     def _split_at(
         self, piece_index: int, local_offset: int
-    ) -> tuple[List[_Piece], List[_Piece]]:
+    ) -> tuple[list[_Piece], list[_Piece]]:
         """Return the left and right piece lists around an insertion point.
 
         The cursor is at ``piece_index`` / ``local_offset`` using insertion-
@@ -133,8 +132,8 @@ class TextBuffer:
         piece = self._pieces[piece_index]
 
         if local_offset == 0:
-            left: List[_Piece] = self._pieces[:piece_index]
-            right: List[_Piece] = list(self._pieces[piece_index:])
+            left: list[_Piece] = self._pieces[:piece_index]
+            right: list[_Piece] = list(self._pieces[piece_index:])
         elif local_offset == piece.length:
             left = self._pieces[: piece_index + 1]
             right = list(self._pieces[piece_index + 1 :])
@@ -152,7 +151,7 @@ class TextBuffer:
 
         return left, right
 
-    def _prefix(self, piece_index: int, local_offset: int) -> List[_Piece]:
+    def _prefix(self, piece_index: int, local_offset: int) -> list[_Piece]:
         """Return the pieces kept to the left of a delete start cursor."""
         if local_offset == 0:
             return list(self._pieces[:piece_index])
@@ -162,7 +161,7 @@ class TextBuffer:
             _Piece(piece.source, piece.start, local_offset)
         ]
 
-    def _suffix(self, piece_index: int, local_offset: int) -> List[_Piece]:
+    def _suffix(self, piece_index: int, local_offset: int) -> list[_Piece]:
         """Return the pieces kept to the right of a delete end cursor."""
         if local_offset == 0:
             return list(self._pieces[piece_index:])

@@ -5,11 +5,9 @@ from __future__ import annotations
 import asyncio
 import json
 import uuid
-from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
 import websockets
 
 from ide_core.auth.manager import AuthManager, User
@@ -23,10 +21,10 @@ from ide_core.chat import (
     RoomManager,
     UnifiedChatIntegration,
 )
-from ide_core.chat.models import ChatRoom, _now_iso
+from ide_core.chat.models import _now_iso
 from ide_core.config.settings import IDESettings
 from ide_core.creative.models import CreativeDomain, CreativeResult
-from ide_core.multimodal.models import InputType, MultimodalInput, ProcessedInput
+from ide_core.multimodal.models import ProcessedInput
 
 
 def _chat_settings(tmp_path):
@@ -242,7 +240,7 @@ def test_message_handler_persists_and_routes(tmp_path):
     assert len(result) == 2
     assert result[1].content == "reply"
 
-    persisted = Path(tmp_path / "t1" / f"messages_r1.json").read_text()
+    persisted = Path(tmp_path / "t1" / "messages_r1.json").read_text()
     data = json.loads(persisted)
     assert len(data) == 2
     assert data[0]["content"] == "hello"

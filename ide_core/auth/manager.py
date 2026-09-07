@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import time
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Set
 
 import jwt
 from pydantic import BaseModel
@@ -18,7 +16,7 @@ class User(BaseModel):
     user_id: str
     name: str
     role: str = "user"
-    tenant_id: Optional[str] = None
+    tenant_id: str | None = None
 
 
 class AuthManager:
@@ -26,8 +24,8 @@ class AuthManager:
 
     def __init__(
         self,
-        settings: Optional[IDESettings] = None,
-        api_keys: Optional[Set[str]] = None,
+        settings: IDESettings | None = None,
+        api_keys: set[str] | None = None,
     ) -> None:
         self._settings = settings or IDESettings()
         self._api_keys = set(api_keys or [])
@@ -57,7 +55,7 @@ class AuthManager:
             algorithm=self._settings.jwt_algorithm,
         )
 
-    def verify_token(self, token: str) -> Optional[User]:
+    def verify_token(self, token: str) -> User | None:
         """Validate a token and return the ``User`` it represents."""
         try:
             payload = jwt.decode(

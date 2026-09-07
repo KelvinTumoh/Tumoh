@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Optional
-
 from .models import DecisionContext, DecisionOption
 
 
@@ -17,14 +15,14 @@ class OptionScorer:
         "style": 0.1,
     }
 
-    def __init__(self, factor_weights: Optional[dict] = None) -> None:
+    def __init__(self, factor_weights: dict | None = None) -> None:
         self.factor_weights = factor_weights or self.default_weights.copy()
 
     def score_option(
         self,
         option: DecisionOption,
         context: DecisionContext,
-        learned_weights: Optional[dict] = None,
+        learned_weights: dict | None = None,
     ) -> float:
         """Return a normalized 0.0-1.0 score for ``option``."""
         weights = learned_weights if learned_weights is not None else self.factor_weights

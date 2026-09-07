@@ -9,11 +9,11 @@ from .models import DecisionContext, DecisionOption, DecisionResult
 from .scorer import OptionScorer
 
 __all__ = [
-    "SmartAssistant",
-    "SmartChooser",
-    "OptionScorer",
+    "DecisionContext",
     "DecisionLearner",
     "DecisionOption",
-    "DecisionContext",
     "DecisionResult",
+    "OptionScorer",
+    "SmartAssistant",
+    "SmartChooser",
 ]

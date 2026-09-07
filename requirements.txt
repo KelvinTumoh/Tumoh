@@ -12,5 +12,9 @@ pytesseract>=0.3.10
 SpeechRecognition>=3.10.0
 
 # Creative Agent (Optional)
-openai>=1.0.0
+openai>=1.40,<2.0
+google-generativeai>=0.7.0
 Pillow>=10.0.0
+
+# Real-time web search
+ddgs>=9.0,<9.5

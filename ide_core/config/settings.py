@@ -22,7 +22,15 @@ class IDESettings(BaseSettings):
     editor_theme: str = "vs-dark"
     lsp_python_command: str = "pylsp"
     lsp_typescript_command: str = "typescript-language-server --stdio"
-    directory_exclusions: list[str] = Field(default_factory=lambda: ["__pycache__", "node_modules", ".git", ".venv", "venv"])
+    directory_exclusions: list[str] = Field(
+        default_factory=lambda: [
+            "__pycache__",
+            "node_modules",
+            ".git",
+            ".venv",
+            "venv",
+        ]
+    )
     jwt_secret: str = "dev-secret-change-in-production"
     jwt_algorithm: str = "HS256"
     jwt_expiry_minutes: int = 60
@@ -68,6 +76,14 @@ class IDESettings(BaseSettings):
     personality_storage_path: str = "data/personality"
     auto_celebrate: bool = True
     auto_suggest_help: bool = True
+
+    # Smart AI routing / multi-provider LLM
+    deepseek_api_key: str | None = None
+    gemini_api_key: str | None = None
+    enable_deepseek: bool = True
+    enable_gemini: bool = True
+    enable_smart_routing: bool = True
+    routing_default_model: str = "deepseek"
 
     # Unified chat feature flags
     enable_chat: bool = True

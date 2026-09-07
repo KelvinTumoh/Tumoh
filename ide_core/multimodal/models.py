@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional
 
 
 class InputType(Enum):
@@ -28,7 +27,7 @@ class MultimodalInput:
     content: bytes
     metadata: dict = field(default_factory=dict)
     source: str = ""
-    tenant_id: Optional[str] = None
+    tenant_id: str | None = None
 
 
 @dataclass

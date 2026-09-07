@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-import json
-from dataclasses import asdict, dataclass
-from typing import Any, Dict
-
 import asyncio
+import json
+from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -16,11 +15,11 @@ class Position:
     line: int
     character: int
 
-    def to_dict(self) -> Dict[str, int]:
+    def to_dict(self) -> dict[str, int]:
         return {"line": self.line, "character": self.character}
 
     @classmethod
-    def from_dict(cls, data: Dict[str, int]) -> Position:
+    def from_dict(cls, data: dict[str, int]) -> Position:
         return cls(line=data["line"], character=data["character"])
 
 
@@ -31,11 +30,11 @@ class Range:
     start: Position
     end: Position
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {"start": self.start.to_dict(), "end": self.end.to_dict()}
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> Range:
+    def from_dict(cls, data: dict[str, Any]) -> Range:
         return cls(
             start=Position.from_dict(data["start"]),
             end=Position.from_dict(data["end"]),
@@ -51,7 +50,7 @@ class TextDocumentItem:
     version: int
     text: str
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "uri": self.uri,
             "languageId": self.language_id,
@@ -60,7 +59,7 @@ class TextDocumentItem:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> TextDocumentItem:
+    def from_dict(cls, data: dict[str, Any]) -> TextDocumentItem:
         return cls(
             uri=data["uri"],
             language_id=data["languageId"],
@@ -90,7 +89,7 @@ async def decode_message(reader: asyncio.StreamReader) -> dict:
     """
     header_bytes = await reader.readuntil(b"\r\n\r\n")
     header_text = header_bytes.decode("ascii")
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
     for line in header_text.strip().split("\r\n"):
         if ":" in line:
             key, value = line.split(":", 1)

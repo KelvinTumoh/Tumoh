@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import uuid
-from typing import Optional
 
 from ide_core.config.settings import IDESettings
 
@@ -16,8 +15,8 @@ class SmartChooser:
 
     def __init__(
         self,
-        scorer: Optional[OptionScorer] = None,
-        settings: Optional[IDESettings] = None,
+        scorer: OptionScorer | None = None,
+        settings: IDESettings | None = None,
     ) -> None:
         self._scorer = scorer or OptionScorer()
         self._settings = settings or IDESettings()
