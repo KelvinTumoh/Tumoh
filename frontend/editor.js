@@ -168,26 +168,10 @@ require(["vs/editor/editor.main"], function () {
     });
   }
 
-  document.querySelectorAll(".tab").forEach((tab) => {
-    tab.addEventListener("click", () => {
-      document
-        .querySelectorAll(".tab")
-        .forEach((t) => t.classList.remove("active"));
-      tab.classList.add("active");
-
-      const view = tab.dataset.view;
-      document.getElementById("editor").classList.toggle("hidden", view !== "editor");
-      document
-        .getElementById("diff-editor")
-        .classList.toggle("visible", view === "diff");
-      document
-        .getElementById("chat-panel")
-        .classList.toggle("hidden", view !== "chat");
-
-      if (view === "diff") {
-        setTimeout(() => diffEditor.layout(), 50);
-      }
-    });
+  // Workbench shell in workbench.js now owns tab and panel switching.
+  window.addEventListener("resize", () => {
+    editor.layout();
+    diffEditor.layout();
   });
 
   function markerFromDiagnostic(d) {
