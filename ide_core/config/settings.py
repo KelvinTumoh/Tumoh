@@ -126,3 +126,7 @@ class IDESettings(BaseSettings):
         ]
     )
     audit_log_path: str = "security.log"
+
+    # Extension / plugin ecosystem
+    enable_extensions: bool = True
+    extensions_dir: str = "extensions"
